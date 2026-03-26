@@ -58,6 +58,7 @@ abstract class StashPresenter<T>(
     ) {
         val cardView = viewHolder.view as StashImageCardView
         if (item != null) {
+            @Suppress("UNCHECKED_CAST")
             item as T
             val localCallBack = callback ?: getDefaultLongClickCallBack()
             val popUpItems = localCallBack.getPopUpItems(item)

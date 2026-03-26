@@ -66,7 +66,7 @@ import java.io.File
 
 @Serializable
 enum class PreferenceScreenOption(
-    @XmlRes val preferenceRes: Int,
+    @param:XmlRes val preferenceRes: Int,
 ) {
     BASIC(R.xml.root_preferences),
     ADVANCED(R.xml.advanced_preferences),
@@ -109,6 +109,7 @@ class SettingsFragment : LeanbackSettingsFragmentCompat() {
                 pref.fragment!!,
             )
         f.arguments = args
+        @Suppress("DEPRECATION")
         f.setTargetFragment(caller, 0)
         if (f is PreferenceFragmentCompat ||
             f is PreferenceDialogFragmentCompat
@@ -139,11 +140,13 @@ class SettingsFragment : LeanbackSettingsFragmentCompat() {
     ): Boolean =
         if (pref.key == getString(R.string.pref_key_pin_code)) {
             val f = NumberEditTextPreferencesDialog(pref.key)
+            @Suppress("DEPRECATION")
             f.setTargetFragment(caller, 0)
             startPreferenceFragment(f)
             true
         } else if (pref.key == "handy_connection_key") {
             val f = StringEditTextPreferencesDialog("handy_connection_key")
+            @Suppress("DEPRECATION")
             f.setTargetFragment(caller, 0)
             startPreferenceFragment(f)
             true

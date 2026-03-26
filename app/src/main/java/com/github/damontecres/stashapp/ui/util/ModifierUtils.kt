@@ -185,10 +185,12 @@ fun createInitialFocusRestorerModifiers(): FocusRequesterModifiers {
         Modifier
             .focusRequester(focusRequester)
             .focusProperties {
+                @Suppress("DEPRECATION")
                 exit = {
                     focusRequester.saveFocusedChild()
                     FocusRequester.Default
                 }
+                @Suppress("DEPRECATION")
                 enter = {
                     if (focusRequester.restoreFocusedChild()) {
                         FocusRequester.Cancel

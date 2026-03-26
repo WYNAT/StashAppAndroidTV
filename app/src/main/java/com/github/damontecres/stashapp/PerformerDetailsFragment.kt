@@ -123,6 +123,7 @@ class PerformerDetailsFragment : DetailsFragment() {
         addRow(R.string.stashapp_created_at, parseTimeToString(perf.created_at))
         addRow(R.string.stashapp_updated_at, parseTimeToString(perf.updated_at))
 
+        @Suppress("UNCHECKED_CAST")
         val customFields = perf.custom_fields as Map<String, *>
         if (customFields.isNotEmpty()) {
             addRow("", null, true)

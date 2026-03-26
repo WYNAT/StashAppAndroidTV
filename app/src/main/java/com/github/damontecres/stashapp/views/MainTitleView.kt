@@ -34,7 +34,7 @@ class MainTitleView(
     }
 
     private var mPreferencesView: ImageButton
-    private lateinit var searchButton: ImageButton
+    private var searchButton: ImageButton
 
     private val iconButton: ImageButton
     private val scenesButton: Button

@@ -161,7 +161,7 @@ class DefaultLongClicker(
 }
 
 data class LongClickerAction<T>(
-    @StringRes val title: Int,
+    @param:StringRes val title: Int,
     val filter: (T) -> Boolean,
     val action: (T, FilterAndPosition?) -> Unit,
 ) {

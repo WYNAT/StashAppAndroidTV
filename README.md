@@ -21,7 +21,8 @@ This fork introduces deep, native integration for **The Handy** hardware directl
 - **Direct API v3 Integration:** Connects seamlessly to `api.handyfeeling.com` while maintaining synchronized playback (play/pause/seek) within the ExoPlayer.
 - **Handy Cloud Bridge:** Allows the use of Funscripts from local Stash servers (e.g., `192.168.x.x`) by automatically uploading the script to a secure, temporary Handy cloud hosting relay.
 - **Interactive UI Indicators:** Scenes with Funscripts are automatically badged with an interactive Gamepad icon across all list and grid views.
-- **Robust Error Handling & Settings:** Features a 30-second connection timeout, video-pause during sync, a native Hardware Test slider, and detailed connection error reporting directly within the app settings and player UI.
+- **Robust Error Handling & Settings:** Features a 30-second connection timeout, video-pause during sync, a native Hardware Test slider, and detailed connection error reporting directly within the app settings and player UI. The integration automatically disables itself if a connection cannot be established.
+- **Quick Player Toggle:** A dedicated Gamepad icon in the Player UI allows for instant enabling/disabling of the Handy integration and immediate script refresh.
 
 ## Setup
 

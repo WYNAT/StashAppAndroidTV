@@ -38,7 +38,7 @@ import kotlin.reflect.KClass
  */
 data class FilterOption<FilterType : StashDataFilter, ValueType : Any>(
     val name: String,
-    @StringRes val nameStringId: Int,
+    @param:StringRes val nameStringId: Int,
     val dataType: DataType?,
     val type: KClass<ValueType>,
     val getter: (FilterType) -> Optional<ValueType?>,

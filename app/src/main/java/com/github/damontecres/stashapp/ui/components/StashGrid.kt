@@ -308,6 +308,7 @@ fun StashGridControls(
                 Modifier
                     .fillMaxSize()
                     .focusProperties {
+                        @Suppress("DEPRECATION")
                         exit = {
                             if (it == FocusDirection.Up) {
                                 rowFocusRequester

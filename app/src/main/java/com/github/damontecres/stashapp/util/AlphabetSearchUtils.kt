@@ -45,6 +45,7 @@ class AlphabetSearchUtils {
                     else -> throw IllegalArgumentException()
                 }.getOrNull()
             return if (andFilter != null) {
+                @Suppress("UNCHECKED_CAST")
                 findNullAndFilter(andFilter) as T
             } else {
                 filter

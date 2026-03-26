@@ -210,6 +210,7 @@ class UpdateChecker {
                                     }
                                 }
 
+                                @Suppress("DEPRECATION")
                                 val intent = Intent(Intent.ACTION_INSTALL_PACKAGE)
                                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                 intent.data = uri
@@ -249,6 +250,7 @@ class UpdateChecker {
                                     copyTo(it.body!!.byteStream(), output, callback = callback)
                                 }
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                    @Suppress("DEPRECATION")
                                     val intent = Intent(Intent.ACTION_INSTALL_PACKAGE)
                                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                     intent.data =

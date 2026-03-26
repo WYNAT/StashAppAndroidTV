@@ -517,11 +517,11 @@ fun StashCard(
             )
         }
 
-        is FullSceneData? -> {
+        is FullSceneData -> {
             SceneCard(
                 uiConfig,
-                item?.asSlimeSceneData,
-                onClick = { item?.let(itemOnClick) },
+                item.asSlimeSceneData,
+                onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
                 modifier,
@@ -529,55 +529,55 @@ fun StashCard(
             )
         }
 
-        is PerformerData? -> {
+        is PerformerData -> {
             PerformerCard(
                 uiConfig,
                 item,
-                onClick = { item?.let(itemOnClick) },
+                onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
                 modifier,
             )
         }
 
-        is ImageData? -> {
+        is ImageData -> {
             ImageCard(
                 uiConfig,
                 item,
-                onClick = { item?.let(itemOnClick) },
+                onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
                 modifier,
             )
         }
 
-        is GalleryData? -> {
+        is GalleryData -> {
             GalleryCard(
                 uiConfig,
                 item,
-                onClick = { item?.let(itemOnClick) },
+                onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
                 modifier,
             )
         }
 
-        is MarkerData? -> {
+        is MarkerData -> {
             MarkerCard(
                 uiConfig,
                 item,
-                onClick = { item?.let(itemOnClick) },
+                onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
                 modifier,
             )
         }
 
-        is GroupData? -> {
+        is GroupData -> {
             GroupCard(
                 uiConfig,
                 item,
-                onClick = { item?.let(itemOnClick) },
+                onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
                 modifier,
@@ -585,34 +585,34 @@ fun StashCard(
             )
         }
 
-        is GroupRelationshipData? -> {
+        is GroupRelationshipData -> {
             GroupCard(
                 uiConfig,
-                item?.group,
-                onClick = { item?.let(itemOnClick) },
+                item.group,
+                onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
                 modifier,
-                subtitle = item?.description,
+                subtitle = item.description,
             )
         }
 
-        is StudioData? -> {
+        is StudioData -> {
             StudioCard(
                 uiConfig,
                 item,
-                onClick = { item?.let(itemOnClick) },
+                onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
                 modifier,
             )
         }
 
-        is TagData? -> {
+        is TagData -> {
             TagCard(
                 uiConfig,
                 item,
-                onClick = { item?.let(itemOnClick) },
+                onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
                 modifier,
@@ -654,7 +654,7 @@ fun StashCard(
         }
 
         else -> {
-            throw UnsupportedOperationException("Item with class ${item?.javaClass} not supported.")
+            throw UnsupportedOperationException("Item with class ${item.javaClass} not supported.")
         }
     }
 }

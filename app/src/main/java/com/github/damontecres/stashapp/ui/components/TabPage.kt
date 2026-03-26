@@ -286,7 +286,7 @@ fun StashGridTab(
             modifier = modifier,
             positionCallback = positionCallback,
             uiConfig = composeUiConfig,
-            updateFilter = { onFilterChange?.invoke(it) },
+            updateFilter = { onFilterChange.invoke(it) },
             letterPosition = viewModel::findLetterPosition,
             subToggleLabel = subToggleLabel,
             onSubToggleCheck = onSubToggleCheck,

@@ -74,7 +74,7 @@ abstract class PlaylistFragment<T : Query.Data, D : StashData, C : Query.Data> :
     @OptIn(UnstableApi::class)
     override fun onStart() {
         super.onStart()
-        if (Util.SDK_INT > 23) {
+        if (android.os.Build.VERSION.SDK_INT > 23) {
             // The player isn't available until after super is called
             viewLifecycleOwner.lifecycleScope.launch(StashCoroutineExceptionHandler()) {
                 buildPlaylist()
@@ -85,7 +85,7 @@ abstract class PlaylistFragment<T : Query.Data, D : StashData, C : Query.Data> :
     @OptIn(UnstableApi::class)
     override fun onResume() {
         super.onResume()
-        if ((Util.SDK_INT <= 23 || player == null)) {
+        if ((android.os.Build.VERSION.SDK_INT <= 23 || player == null)) {
             // The player isn't available until after super is called
             viewLifecycleOwner.lifecycleScope.launch(StashCoroutineExceptionHandler()) {
                 buildPlaylist()

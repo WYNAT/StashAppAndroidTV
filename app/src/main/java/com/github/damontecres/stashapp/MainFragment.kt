@@ -147,45 +147,35 @@ class MainFragment :
                 showLoading()
                 clearData()
                 try {
-                    if (newServer != null) {
-                        val result =
-                            testStashConnection(
-                                requireContext(),
-                                false,
-                                newServer.apolloClient,
-                            )
-                        if (result is TestResult.Success) {
-                            val mainTitleView =
-                                requireActivity().findViewById<MainTitleView>(R.id.browse_title_group)
-                            mainTitleView.refreshMenuItems(newServer.serverPreferences)
-                            fetchData(newServer)
-                        } else if (result is TestResult.UnsupportedVersion) {
-                            Log.w(
-                                TAG,
-                                "Server version is not supported: ${result.serverVersion}",
-                            )
-                            Toast
-                                .makeText(
-                                    requireContext(),
-                                    "Server version ${result.serverVersion} is not supported!",
-                                    Toast.LENGTH_LONG,
-                                ).show()
-                        } else {
-                            Log.w(TAG, "testStashConnection returned $result")
-                            requireActivity().findViewById<View?>(R.id.search_button).requestFocus()
-                            Toast
-                                .makeText(
-                                    requireContext(),
-                                    "Connection to Stash failed: $result",
-                                    Toast.LENGTH_LONG,
-                                ).show()
-                        }
-                    } else {
-                        Log.e(TAG, "newServer is null")
+                    val result =
+                        testStashConnection(
+                            requireContext(),
+                            false,
+                            newServer.apolloClient,
+                        )
+                    if (result is TestResult.Success) {
+                        val mainTitleView =
+                            requireActivity().findViewById<MainTitleView>(R.id.browse_title_group)
+                        mainTitleView.refreshMenuItems(newServer.serverPreferences)
+                        fetchData(newServer)
+                    } else if (result is TestResult.UnsupportedVersion) {
+                        Log.w(
+                            TAG,
+                            "Server version is not supported: ${result.serverVersion}",
+                        )
                         Toast
                             .makeText(
                                 requireContext(),
-                                "Stash server not configured!",
+                                "Server version ${result.serverVersion} is not supported!",
+                                Toast.LENGTH_LONG,
+                            ).show()
+                    } else {
+                        Log.w(TAG, "testStashConnection returned $result")
+                        requireActivity().findViewById<View>(R.id.search_button).requestFocus()
+                        Toast
+                            .makeText(
+                                requireContext(),
+                                "Connection to Stash failed: $result",
                                 Toast.LENGTH_LONG,
                             ).show()
                     }
@@ -234,11 +224,12 @@ class MainFragment :
                     Log.e(TAG, msg)
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
-                        requireActivity().findViewById<View?>(R.id.search_button).requestFocus()
+                        requireActivity().findViewById<View>(R.id.search_button).requestFocus()
                     }
                 } else {
                     val queryEngine = QueryEngine(server)
                     val filterParser = FilterParser(serverVersion)
+                    @Suppress("UNCHECKED_CAST")
                     val frontPageContent =
                         server.serverPreferences.uiConfiguration?.getCaseInsensitive("frontPageContent") as List<Map<String, *>>?
                     if (frontPageContent == null) {
@@ -293,7 +284,7 @@ class MainFragment :
                             "Stash not configured. Please enter the URL in settings!",
                             Toast.LENGTH_LONG,
                         ).show()
-                    requireActivity().findViewById<View?>(R.id.search_button).requestFocus()
+                    requireActivity().findViewById<View>(R.id.search_button).requestFocus()
                 }
             } catch (ex: QueryEngine.QueryException) {
                 Log.e(TAG, "QueryException", ex)
@@ -304,7 +295,7 @@ class MainFragment :
                             ex.message,
                             Toast.LENGTH_LONG,
                         ).show()
-                    requireActivity().findViewById<View?>(R.id.search_button).requestFocus()
+                    requireActivity().findViewById<View>(R.id.search_button).requestFocus()
                 }
             } catch (ex: Exception) {
                 Log.e(TAG, "Exception in fetchData", ex)

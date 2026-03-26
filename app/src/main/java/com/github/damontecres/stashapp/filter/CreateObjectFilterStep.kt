@@ -38,6 +38,7 @@ class CreateObjectFilterStep : CreateFilterGuidedStepFragment() {
         val dataType = viewModel.dataType.value!!
         return getFilterOptions(dataType)
             .mapIndexed { index, filterOption ->
+                @Suppress("UNCHECKED_CAST")
                 filterOption as FilterOption<StashDataFilter, Any>
                 val value = viewModel.getValue(filterOption)
                 val description =
@@ -134,11 +135,13 @@ class CreateObjectFilterStep : CreateFilterGuidedStepFragment() {
             when (filterOption.nameStringId) {
                 // Rating needs a special picker for its sub-filter type
                 R.string.stashapp_rating -> {
+                    @Suppress("UNCHECKED_CAST")
                     filterOption as FilterOption<StashDataFilter, IntCriterionInput>
                     nextStep(RatingPickerFragment(filterOption))
                 }
 
                 R.string.stashapp_duration -> {
+                    @Suppress("UNCHECKED_CAST")
                     filterOption as FilterOption<StashDataFilter, IntCriterionInput>
                     nextStep(DurationPickerFragment(filterOption))
                 }
@@ -147,31 +150,37 @@ class CreateObjectFilterStep : CreateFilterGuidedStepFragment() {
                     // Get the picker for the sub-filter type
                     when (filterOption.type) {
                         IntCriterionInput::class -> {
+                            @Suppress("UNCHECKED_CAST")
                             filterOption as FilterOption<StashDataFilter, IntCriterionInput>
                             nextStep(IntPickerFragment(filterOption))
                         }
 
                         FloatCriterionInput::class -> {
+                            @Suppress("UNCHECKED_CAST")
                             filterOption as FilterOption<StashDataFilter, FloatCriterionInput>
                             nextStep(FloatPickerFragment(filterOption))
                         }
 
                         Boolean::class -> {
+                            @Suppress("UNCHECKED_CAST")
                             filterOption as FilterOption<StashDataFilter, Boolean>
                             nextStep(BooleanPickerFragment(filterOption))
                         }
 
                         StringCriterionInput::class -> {
+                            @Suppress("UNCHECKED_CAST")
                             filterOption as FilterOption<StashDataFilter, StringCriterionInput>
                             nextStep(StringPickerFragment(filterOption))
                         }
 
                         DateCriterionInput::class -> {
+                            @Suppress("UNCHECKED_CAST")
                             filterOption as FilterOption<StashDataFilter, DateCriterionInput>
                             nextStep(DatePickerFragment(filterOption))
                         }
 
                         MultiCriterionInput::class -> {
+                            @Suppress("UNCHECKED_CAST")
                             filterOption as FilterOption<StashDataFilter, MultiCriterionInput>
                             nextStep(
                                 MultiCriterionFragment(
@@ -182,6 +191,7 @@ class CreateObjectFilterStep : CreateFilterGuidedStepFragment() {
                         }
 
                         HierarchicalMultiCriterionInput::class -> {
+                            @Suppress("UNCHECKED_CAST")
                             filterOption as FilterOption<StashDataFilter, HierarchicalMultiCriterionInput>
                             nextStep(
                                 HierarchicalMultiCriterionFragment(
@@ -192,21 +202,25 @@ class CreateObjectFilterStep : CreateFilterGuidedStepFragment() {
                         }
 
                         GenderCriterionInput::class -> {
+                            @Suppress("UNCHECKED_CAST")
                             filterOption as FilterOption<StashDataFilter, GenderCriterionInput>
                             nextStep(GenderPickerFragment(filterOption))
                         }
 
                         ResolutionCriterionInput::class -> {
+                            @Suppress("UNCHECKED_CAST")
                             filterOption as FilterOption<StashDataFilter, ResolutionCriterionInput>
                             nextStep(ResolutionPickerFragment(filterOption))
                         }
 
                         OrientationCriterionInput::class -> {
+                            @Suppress("UNCHECKED_CAST")
                             filterOption as FilterOption<StashDataFilter, OrientationCriterionInput>
                             nextStep(OrientationPickerFragment(filterOption))
                         }
 
                         CircumcisionCriterionInput::class -> {
+                            @Suppress("UNCHECKED_CAST")
                             filterOption as FilterOption<StashDataFilter, CircumcisionCriterionInput>
                             nextStep(CircumcisionPickerFragment(filterOption))
                         }

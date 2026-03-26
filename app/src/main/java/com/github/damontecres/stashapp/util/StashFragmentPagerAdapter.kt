@@ -9,6 +9,7 @@ import com.github.damontecres.stashapp.data.DataType
 /**
  * A [FragmentStatePagerAdapter] to show various tabs for data types
  */
+@Suppress("DEPRECATION")
 class StashFragmentPagerAdapter(
     private val items: List<PagerEntry>,
     fm: FragmentManager,

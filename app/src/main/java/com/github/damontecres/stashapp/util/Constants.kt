@@ -768,9 +768,16 @@ fun getMaxMeasuredWidth(
         if (maxWidth != null) {
             maxWidth
         } else if (maxWidthFraction != null && context is Activity) {
-            val displayMetrics = DisplayMetrics()
-            context.windowManager.defaultDisplay.getMetrics(displayMetrics)
-            (displayMetrics.widthPixels * maxWidthFraction).toInt()
+            val width = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                context.windowManager.currentWindowMetrics.bounds.width()
+            } else {
+                @Suppress("DEPRECATION")
+                val displayMetrics = DisplayMetrics()
+                @Suppress("DEPRECATION")
+                context.windowManager.defaultDisplay.getMetrics(displayMetrics)
+                displayMetrics.widthPixels
+            }
+            (width * maxWidthFraction).toInt()
         } else {
             Log.w(Constants.TAG, "maxWidthFraction is not null, but couldn't get window size")
             Int.MAX_VALUE
@@ -928,13 +935,18 @@ fun Bundle.putDestination(destination: Destination): Bundle {
 }
 
 @OptIn(ExperimentalSerializationApi::class)
-fun <T : Destination> Bundle.maybeGetDestination(): T? =
-    getParcelable(NavigationManager.DESTINATION_ARG, Destination::class, 0, StashParcelable) as T?
+fun <T : Destination> Bundle.maybeGetDestination(): T? {
+    @Suppress("UNCHECKED_CAST")
+    return getParcelable(NavigationManager.DESTINATION_ARG, Destination::class, 0, StashParcelable) as T?
+}
 
 fun <T : Destination> Bundle.getDestination(): T = maybeGetDestination()!!
 
 @OptIn(ExperimentalSerializationApi::class)
-fun <T : Destination> Bundle.getDestination(name: String): T = getParcelable(name, Destination::class, 0, StashParcelable) as T
+fun <T : Destination> Bundle.getDestination(name: String): T {
+    @Suppress("UNCHECKED_CAST")
+    return getParcelable(name, Destination::class, 0, StashParcelable) as T
+}
 
 fun experimentalFeaturesEnabled(): Boolean {
     val context = StashApplication.getApplication()
@@ -1103,6 +1115,7 @@ fun StashDataFilter.toReadableString(newlines: Boolean = false): String =
             this@toReadableString::class
                 .declaredMemberProperties
                 .mapNotNull { param ->
+                    @Suppress("UNCHECKED_CAST")
                     val obj =
                         (param as KProperty1<StashDataFilter, *>).get(this@toReadableString) as Optional<*>
                     val value = obj.getOrNull()
@@ -1135,6 +1148,7 @@ fun Any.toReadableString(newlines: Boolean = false) =
             this@toReadableString::class
                 .declaredMemberProperties
                 .map { param ->
+                    @Suppress("UNCHECKED_CAST")
                     param as KProperty1<Any, *>
                     val value = param.get(this@toReadableString)
                     if (value is Optional<*>) {

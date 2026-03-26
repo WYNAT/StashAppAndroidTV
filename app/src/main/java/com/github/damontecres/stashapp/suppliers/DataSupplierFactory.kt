@@ -34,6 +34,7 @@ class DataSupplierFactory(
             Log.w(TAG, "Filter has unresolved random sort: $args")
         }
         if (args.override != null) {
+            @Suppress("UNCHECKED_CAST")
             return when (args.override) {
                 is DataSupplierOverride.PerformerTags -> {
                     PerformerTagDataSupplier(args.override.performerId)
@@ -77,6 +78,7 @@ class DataSupplierFactory(
                 }
             } as StashPagingSource.DataSupplier<T, D, C>
         } else {
+            @Suppress("UNCHECKED_CAST")
             return when (args.dataType) {
                 DataType.SCENE -> {
                     SceneDataSupplier(

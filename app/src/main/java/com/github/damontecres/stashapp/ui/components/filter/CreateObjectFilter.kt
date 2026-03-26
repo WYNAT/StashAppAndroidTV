@@ -79,6 +79,7 @@ fun ObjectFilterList(
             filterOptions,
             key = { _, it -> it.nameStringId },
         ) { index, item ->
+            @Suppress("UNCHECKED_CAST")
             item as FilterOption<StashDataFilter, Any>
             val value = item.getter.invoke(current).getOrNull()
             val subtitle =

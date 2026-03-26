@@ -34,11 +34,13 @@ class FilterWriter(
         val objectFilter =
             buildMap<String, Any> {
                 filter.javaClass.kotlin.declaredMemberProperties.forEach { param ->
+                    @Suppress("UNCHECKED_CAST")
                     val obj = param.get(filter) as Optional<*>
                     if (obj != Optional.Absent) {
                         val o = obj.getOrNull()!!
                         val dataType = getType(filterDataType, param.name)
                         if (param.name == "custom_fields") {
+                            @Suppress("UNCHECKED_CAST")
                             val customFields = o as List<CustomFieldCriterionInput>
                             put(param.name, customFields.map { it.toMap() })
                         } else {

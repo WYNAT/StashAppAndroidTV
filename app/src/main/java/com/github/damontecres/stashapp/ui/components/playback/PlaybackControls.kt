@@ -4,6 +4,7 @@ package com.github.damontecres.stashapp.ui.components.playback
 
 import android.util.Log
 import android.view.Gravity
+import androidx.compose.ui.draw.alpha
 import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
 import androidx.annotation.StringRes
@@ -134,6 +135,8 @@ fun PlaybackControls(
     playbackSpeed: Float,
     scale: ContentScale,
     seekBarIntervals: Int,
+    isHandyEnabled: Boolean = false,
+    showHandyIcon: Boolean = false,
     modifier: Modifier = Modifier,
     initialFocusRequester: FocusRequester = remember { FocusRequester() },
     seekBarInteractionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -212,6 +215,8 @@ fun PlaybackControls(
                 audioIndex = audioIndex,
                 playbackSpeed = playbackSpeed,
                 scale = scale,
+                isHandyEnabled = isHandyEnabled,
+                showHandyIcon = showHandyIcon,
             )
         }
     }
@@ -418,7 +423,7 @@ fun RightPlaybackButtons(
                 },
                 enabled = true,
                 onControllerInteraction = onControllerInteraction,
-                modifier = if (isHandyEnabled) Modifier else Modifier.then(androidx.compose.ui.draw.alpha(0.5f))
+                modifier = if (isHandyEnabled) Modifier else Modifier.alpha(0.5f)
             )
         }
         // Playback speed, etc

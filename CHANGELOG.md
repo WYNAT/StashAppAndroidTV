@@ -4,6 +4,7 @@ All significant changes to the Stash App Android TV project are documented in th
 
 | Version | Type | Description | Impact |
 | :--- | :--- | :--- | :--- |
+| **v1.x.x+7** | `Fix` | Eliminated all compiler warnings: removed always-true null guards, fixed `View?` type mismatches, suppressed DEPRECATION for `versionCode`/`setDiagnosticStackTraceEnabled` (pre-P branch & missing API), suppressed UNCHECKED_CAST for JSON structure casts, removed unnecessary `lateinit` and safe calls. | Low |
 | **v1.x.x+6** | `Feature` | Added global Enable/Disable toggle for The Handy integration (Auto-disable on error) and Gamepad Player UI quick toggle for immediate script loading in both UIs. | Low |
 | **v1.x.x+5** | `Documentation` | Added detailed Funscript fork feature documentation to README.md | Low |
 | **v1.x.x+4** | `Documentation` | Enhanced AGENTS.MD with functional testing and coding best practices guidelines | Low |

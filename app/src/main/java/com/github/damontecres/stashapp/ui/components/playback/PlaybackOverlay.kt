@@ -98,7 +98,7 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 class ControllerViewState internal constructor(
-    @IntRange(from = 0)
+    @param:IntRange(from = 0)
     private val hideMilliseconds: Int,
     val controlsEnabled: Boolean,
 ) {

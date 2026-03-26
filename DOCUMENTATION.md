@@ -54,7 +54,8 @@ The Funscript feature allows synchronization of "The Handy" devices directly via
     6.  Error and status messages are output via detailed dialogs (Leanback & Compose) with error codes and URLs.
 
 ### Configuration
-*   **Enable/Disable Toggle:** Global switch in Settings, and via a Gamepad icon in the Player UI (automatically disables if loading fails).
+*   **Enable/Disable Toggle:** Global switch in Settings (Old UI XML & Compose), and via a Gamepad icon in the Player UI.
+*   **Auto-Disable Logic:** The integration is automatically disabled globally if `setup()` fails (e.g., due to connection errors or invalid keys).
 *   **Connection Key:** The Handy key must be entered in the UI settings.
 *   **Handy Cloud Bridge:** Enables the use of Funscripts on local Stash servers via automatic hosting relay.
 *   **Sync:** Provides functions for testing the connection and adjusting the server time (offset correction).

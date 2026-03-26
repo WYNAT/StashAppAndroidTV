@@ -40,6 +40,7 @@ class StashApplication : Application() {
         val versionNameStr = pkgInfo.versionName ?: "Unknown version"
 
         Restring.init(this)
+        @Suppress("DEPRECATION")
         Composer.setDiagnosticStackTraceEnabled(BuildConfig.DEBUG)
 
         initAcra {
@@ -96,6 +97,7 @@ class StashApplication : Application() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 pkgInfo.longVersionCode
             } else {
+                @Suppress("DEPRECATION")
                 pkgInfo.versionCode.toLong()
             }
         if (pkgInfo.versionName != currentVersion || newVersionCode != currentVersionCode) {
@@ -133,7 +135,7 @@ class StashApplication : Application() {
             Room
                 .databaseBuilder(this, AppDatabase::class.java, dbName)
                 .addMigrations(MIGRATION_4_TO_5)
-                .fallbackToDestructiveMigration()
+                .fallbackToDestructiveMigration(dropAllTables = true)
                 .build()
     }
 

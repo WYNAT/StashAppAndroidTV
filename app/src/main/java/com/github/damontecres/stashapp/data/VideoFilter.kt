@@ -17,14 +17,14 @@ import androidx.media3.effect.ScaleAndRotateTransformation
  */
 data class VideoFilter(
     val rotation: Int = 0,
-    @IntRange(0, 200) val brightness: Int = COLOR_DEFAULT,
-    @IntRange(0, 200) val contrast: Int = COLOR_DEFAULT,
-    @IntRange(0, 200) val saturation: Int = COLOR_DEFAULT,
-    @IntRange(0, 360) val hue: Int = HUE_DEFAULT,
-    @IntRange(0, 200) val red: Int = COLOR_DEFAULT,
-    @IntRange(0, 200) val green: Int = COLOR_DEFAULT,
-    @IntRange(0, 200) val blue: Int = COLOR_DEFAULT,
-    @IntRange(0, 250) val blur: Int = 0,
+    @param:IntRange(from = 0, to = 200) val brightness: Int = COLOR_DEFAULT,
+    @param:IntRange(from = 0, to = 200) val contrast: Int = COLOR_DEFAULT,
+    @param:IntRange(from = 0, to = 200) val saturation: Int = COLOR_DEFAULT,
+    @param:IntRange(from = 0, to = 360) val hue: Int = HUE_DEFAULT,
+    @param:IntRange(from = 0, to = 200) val red: Int = COLOR_DEFAULT,
+    @param:IntRange(from = 0, to = 200) val green: Int = COLOR_DEFAULT,
+    @param:IntRange(from = 0, to = 200) val blue: Int = COLOR_DEFAULT,
+    @param:IntRange(from = 0, to = 250) val blur: Int = 0,
 ) {
     companion object {
         const val COLOR_DEFAULT = 100

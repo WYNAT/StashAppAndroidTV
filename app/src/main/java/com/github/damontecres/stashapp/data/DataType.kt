@@ -26,15 +26,15 @@ enum class DataType(
     /**
      * The string resource for the singular form of the data type
      */
-    @StringRes val stringId: Int,
+    @param:StringRes val stringId: Int,
     /**
      * The string resource for the plural form of the data type
      */
-    @StringRes val pluralStringId: Int,
+    @param:StringRes val pluralStringId: Int,
     /**
      * The string resource for the icon form of the data type
      */
-    @StringRes val iconStringId: Int,
+    @param:StringRes val iconStringId: Int,
     /**
      * The default sort for items of this data type
      */
@@ -112,6 +112,7 @@ enum class DataType(
 
     val asDefaultFindFilterType get() = defaultSort.asFindFilterType
 
+    @get:Suppress("UNCHECKED_CAST")
     val filterType
         get() =
             when (this) {

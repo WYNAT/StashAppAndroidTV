@@ -35,7 +35,7 @@ sealed interface SortOption {
         /**
          * The string resource for the readable name of the sort
          */
-        @StringRes val nameStringId: Int?,
+        @param:StringRes val nameStringId: Int?,
         override val requiresVersion: Version = Version.MINIMUM_STASH_VERSION,
     ) : SortOption {
         override fun getString(context: Context): String = if (nameStringId != null) context.getString(nameStringId) else key

@@ -220,6 +220,7 @@ fun CreateFilterColumns(
     val objectFilterCount =
         remember(objectFilter) {
             getFilterOptions(dataType).count {
+                @Suppress("UNCHECKED_CAST")
                 (it as FilterOption<StashDataFilter, Any>)
                     .getter
                     .invoke(objectFilter)

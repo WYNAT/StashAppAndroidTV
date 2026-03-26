@@ -257,7 +257,7 @@ fun ItemDetails(
         show = searchForDataType != null,
         dataType = searchForDataType?.dataType ?: DataType.TAG,
         onItemClick = { item ->
-            onEdit?.invoke(EditItem(item.id, searchForDataType!!.dataType, AddRemove.ADD))
+            onEdit.invoke(EditItem(item.id, searchForDataType!!.dataType, AddRemove.ADD))
             searchForDataType = null
         },
         onDismissRequest = { searchForDataType = null },

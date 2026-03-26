@@ -25,6 +25,7 @@ class StashPagingSource<T : Query.Data, D : StashData, S : Any, C : Query.Data>(
     ) : this(
         queryEngine,
         dataSupplier,
+        @Suppress("UNCHECKED_CAST")
         DataTransform { _, _, item -> item as S },
     )
 

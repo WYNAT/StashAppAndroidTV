@@ -115,7 +115,8 @@ class MainPageViewModel : ViewModel() {
         val queryEngine = QueryEngine(server)
         val filterParser = FilterParser(server.version)
         val frontPageContent =
-            server.serverPreferences.uiConfiguration?.getCaseInsensitive("frontPageContent") as List<Map<String, *>>?
+            @Suppress("UNCHECKED_CAST")
+            (server.serverPreferences.uiConfiguration?.getCaseInsensitive("frontPageContent") as? List<Map<String, *>>)
         if (frontPageContent != null) {
             Log.d(TAG, "${frontPageContent.size} front page rows")
             val frontPageParser =
@@ -319,7 +320,7 @@ fun HomePage(
                 modifier =
                     Modifier
                         .focusGroup()
-                        .focusRestorer { focusRequester },
+                        .focusRestorer(focusRequester),
             ) {
                 itemsIndexed(rows) { index, row ->
                     HomePageRow(

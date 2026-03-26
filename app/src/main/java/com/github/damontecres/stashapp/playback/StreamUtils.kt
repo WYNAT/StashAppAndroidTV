@@ -289,7 +289,7 @@ fun languageName(
     code: String?,
 ) = if (code != null && code != "00") {
     try {
-        Locale(code).displayLanguage
+        Locale.forLanguageTag(code).displayLanguage
     } catch (ex: Exception) {
         Log.w(TAG, "Error in locale for '$code'", ex)
         code.uppercase()

@@ -345,10 +345,10 @@ class PlaybackViewModel : ViewModel() {
         }
     }
 
-    fun setupHandy(scene: com.github.damontecres.stashapp.data.Scene) {
+    fun setupHandy(scene: FullSceneData) {
         handyJob?.cancel()
-        if (scene.funscriptUrl != null || scene.interactive) {
-            val funscriptUrl = scene.funscriptUrl
+        if (scene.interactive) {
+            val funscriptUrl = scene.paths.funscript
             if (!funscriptUrl.isNullOrBlank()) {
                 player.pause()
                 showToast(R.string.funscript_loading, Toast.LENGTH_SHORT)
@@ -559,6 +559,9 @@ fun PlaybackPageContent(
     var showSceneDetails by rememberSaveable { mutableStateOf(false) }
     val scene by viewModel.scene.observeAsState()
     val performers by viewModel.performers.observeAsState(listOf())
+
+    // Reactive Handy state so the icon recomposes when toggled
+    var isHandyEnabled by remember { mutableStateOf(com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled) }
 
     AmbientPlayerListener(player)
 
@@ -963,8 +966,8 @@ fun PlaybackPageContent(
                     streamDecision = currentScene.streamDecision,
                     oCounter = oCount,
                     playerControls = PlayerControlsImpl(player),
-                    isHandyEnabled = com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled,
-                    showHandyIcon = currentScene.item.interactive,
+                    isHandyEnabled = isHandyEnabled,
+                    showHandyIcon = currentScene.item.interactive || !currentScene.item.funscriptUrl.isNullOrBlank(),
                     onPlaybackActionClick = {
                         when (it) {
                             PlaybackAction.CreateMarker -> {
@@ -1028,8 +1031,9 @@ fun PlaybackPageContent(
                             PlaybackAction.ToggleHandy -> {
                                 val enabled = !com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled
                                 com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled = enabled
+                                isHandyEnabled = enabled
                                 if (enabled) {
-                                    currentScene.item.let { s -> viewModel.setupHandy(s) }
+                                    viewModel.scene.value?.let { s -> viewModel.setupHandy(s) }
                                 } else {
                                     com.github.damontecres.stashapp.util.HandyManager.stop()
                                 }

@@ -376,6 +376,7 @@ fun PreferencesContent(
                     }
                 }
                 group.preferences.forEachIndexed { prefIndex, pref ->
+                    @Suppress("UNCHECKED_CAST")
                     pref as StashPreference<Any>
                     item {
                         val interactionSource = remember { MutableInteractionSource() }

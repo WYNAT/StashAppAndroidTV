@@ -480,21 +480,25 @@ class SearchForFragment :
             val q = query.lowercase()
             return when (dataType) {
                 DataType.GROUP -> {
+                    @Suppress("UNCHECKED_CAST")
                     items as List<GroupData>
                     items.none { it.name.lowercase() == q || it.aliases?.lowercase() == q }
                 }
 
                 DataType.PERFORMER -> {
+                    @Suppress("UNCHECKED_CAST")
                     items as List<PerformerData>
                     items.none { it.name.lowercase() == q || it.alias_list.any { it.lowercase() == q } }
                 }
 
                 DataType.TAG -> {
+                    @Suppress("UNCHECKED_CAST")
                     items as List<TagData>
                     items.none { it.name.lowercase() == q || it.aliases.any { it.lowercase() == q } }
                 }
 
                 DataType.STUDIO -> {
+                    @Suppress("UNCHECKED_CAST")
                     items as List<StudioData>
                     items.none { it.name.lowercase() == q || it.aliases.any { it.lowercase() == q } }
                 }
