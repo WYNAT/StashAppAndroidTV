@@ -345,8 +345,10 @@ class PlaybackViewModel : ViewModel() {
         }
     }
 
-    fun setupHandy(scene: FullSceneData) {
+    fun setupHandy(scene: FullSceneData, onDeactivated: (() -> Unit)? = null) {
         handyJob?.cancel()
+        if (!com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled) return
+
         if (scene.interactive) {
             val funscriptUrl = scene.paths.funscript
             if (!funscriptUrl.isNullOrBlank()) {
@@ -374,6 +376,10 @@ class PlaybackViewModel : ViewModel() {
                             showToast(R.string.funscript_success, Toast.LENGTH_SHORT)
                             Log.i(TAG, "Handy setup successful")
                         } else {
+                            // Deactivate integration on all setup failures to prevent loops
+                            com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled = false
+                            onDeactivated?.invoke()
+
                             val errorMsg = result.toString()
                             viewModelScope.launch {
                                 withContext(Dispatchers.Main) {
@@ -419,7 +425,10 @@ class PlaybackViewModel : ViewModel() {
             }
             this@PlaybackViewModel.scene.value = scene
             if (scene != null) {
-                setupHandy(scene)
+                setupHandy(scene) {
+                    // Update state to trigger recomposition of player icons if needed
+                    // This callback allows updating local UI state from the ViewModel
+                }
             }
         }
     }
@@ -562,6 +571,11 @@ fun PlaybackPageContent(
 
     // Reactive Handy state so the icon recomposes when toggled
     var isHandyEnabled by remember { mutableStateOf(com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled) }
+
+    // Re-sync UI state when scene changes or deactivation happens in VM
+    LaunchedEffect(scene, viewModel.handyError.value) {
+        isHandyEnabled = com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled
+    }
 
     AmbientPlayerListener(player)
 
@@ -1103,23 +1117,30 @@ fun PlaybackPageContent(
                         }
                     }
                 ) {
-                    Box(
+                    androidx.tv.material3.Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        colors = androidx.tv.material3.SurfaceDefaults.colors(
+                            containerColor = Material3Theme.colorScheme.surface,
+                            contentColor = Material3Theme.colorScheme.onSurface
+                        ),
                         modifier = Modifier
                             .padding(16.dp)
-                            .background(Material3Theme.colorScheme.surface, RoundedCornerShape(8.dp))
-                            .padding(24.dp)
                     ) {
                         Column(
-                            modifier = Modifier.verticalScroll(rememberScrollState()),
+                            modifier = Modifier
+                                .padding(24.dp)
+                                .verticalScroll(rememberScrollState()),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
                                 "Handy Funscript Error",
-                                style = Material3Theme.typography.headlineSmall
+                                style = Material3Theme.typography.headlineSmall,
+                                color = Material3Theme.colorScheme.error
                             )
                             Text(
-                                error
+                                error,
+                                color = Material3Theme.colorScheme.onSurface
                             )
                             Button(
                                 onClick = {

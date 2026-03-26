@@ -221,6 +221,7 @@ object HandyManager {
         var normalizedUrl = url.trim()
         if (!normalizedUrl.startsWith("http://", ignoreCase = true) && !normalizedUrl.startsWith("https://", ignoreCase = true)) {
             Log.e(TAG, "Handy setup failed: Unsupported URL protocol - $normalizedUrl")
+            isHandyEnabled = false
             return@withContext HandyResult.ApiError(4003, "Unsupported URL protocol. Only http/https supported.")
         }
 
@@ -248,6 +249,7 @@ object HandyManager {
             val modeResult = setMode(1)
             if (modeResult !is HandyResult.Success) {
                 Log.e(TAG, "Handy setup failed: Could not set HSSP mode - $modeResult")
+                isHandyEnabled = false
                 return@withContext modeResult
             }
 
