@@ -92,6 +92,7 @@ sealed interface PlaybackAction {
     data object ShowVideoFilterDialog : PlaybackAction
 
     data object ShowSceneDetails : PlaybackAction
+    data object ToggleHandy : PlaybackAction
 
     data class ToggleCaptions(
         val index: Int,
@@ -384,6 +385,8 @@ fun RightPlaybackButtons(
     audioIndex: Int?,
     playbackSpeed: Float,
     scale: ContentScale,
+    isHandyEnabled: Boolean = false,
+    showHandyIcon: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     var showCaptionDialog by remember { mutableStateOf(false) }
@@ -405,6 +408,19 @@ fun RightPlaybackButtons(
             },
             onControllerInteraction = onControllerInteraction,
         )
+        // Handy
+        if (showHandyIcon) {
+            PlaybackButton(
+                iconRes = R.drawable.baseline_videogame_asset_24,
+                onClick = {
+                    onControllerInteraction.invoke()
+                    onPlaybackActionClick.invoke(PlaybackAction.ToggleHandy)
+                },
+                enabled = true,
+                onControllerInteraction = onControllerInteraction,
+                modifier = if (isHandyEnabled) Modifier else Modifier.then(androidx.compose.ui.draw.alpha(0.5f))
+            )
+        }
         // Playback speed, etc
         PlaybackButton(
             iconRes = R.drawable.vector_settings,
@@ -740,6 +756,8 @@ private fun RightPlaybackButtonsPreview() {
                 audioIndex = null,
                 playbackSpeed = 1.0f,
                 scale = ContentScale.Fit,
+                isHandyEnabled = false,
+                showHandyIcon = true,
             )
             PlaybackFaButton(
                 iconRes = R.string.fa_thumbs_up,

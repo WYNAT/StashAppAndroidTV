@@ -224,6 +224,18 @@ sealed interface StashPreference<T> {
                 },
             )
             
+        val HandyEnabled =
+            StashSwitchPreference(
+                title = R.string.handy_enabled_title,
+                prefKey = R.string.pref_key_handy_enabled,
+                defaultValue = false,
+                getter = { it.playbackPreferences.handyEnabled },
+                setter = { prefs, value ->
+                    prefs.updatePlaybackPreferences { handyEnabled = value }
+                },
+                summary = R.string.handy_enabled_summary,
+            )
+
         val HandyConnectionKey =
             StashStringPreference(
                 title = R.string.handy_connection_key_title,

@@ -345,10 +345,10 @@ class PlaybackViewModel : ViewModel() {
         }
     }
 
-    private fun setupHandy(scene: FullSceneData) {
+    fun setupHandy(scene: com.github.damontecres.stashapp.data.Scene) {
         handyJob?.cancel()
-        if (scene.interactive) {
-            val funscriptUrl = scene.paths.funscript
+        if (scene.funscriptUrl != null || scene.interactive) {
+            val funscriptUrl = scene.funscriptUrl
             if (!funscriptUrl.isNullOrBlank()) {
                 player.pause()
                 showToast(R.string.funscript_loading, Toast.LENGTH_SHORT)
@@ -963,6 +963,8 @@ fun PlaybackPageContent(
                     streamDecision = currentScene.streamDecision,
                     oCounter = oCount,
                     playerControls = PlayerControlsImpl(player),
+                    isHandyEnabled = com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled,
+                    showHandyIcon = currentScene.item.interactive,
                     onPlaybackActionClick = {
                         when (it) {
                             PlaybackAction.CreateMarker -> {
@@ -1021,6 +1023,16 @@ fun PlaybackPageContent(
 
                             PlaybackAction.ShowSceneDetails -> {
                                 showSceneDetails = true
+                            }
+
+                            PlaybackAction.ToggleHandy -> {
+                                val enabled = !com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled
+                                com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled = enabled
+                                if (enabled) {
+                                    currentScene.item.let { s -> viewModel.setupHandy(s) }
+                                } else {
+                                    com.github.damontecres.stashapp.util.HandyManager.stop()
+                                }
                             }
                         }
                     },

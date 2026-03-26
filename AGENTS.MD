@@ -35,6 +35,7 @@ This document serves as a guide for AI agents and developers working on this pro
 3.  **UI Parity (Mandate):** Changes to icons, texts, colors, or interaction logic MUST be implemented in both paths (Leanback & Compose) simultaneously. A feature is only considered "Done" when it is available in both UIs.
 4.  **Documentation Obligation:** Any change to the architecture or new features (like Funscript) must be documented in `DOCUMENTATION.md` at the same time.
 5.  **Hardware Security:** API keys (such as the Handy key) must never appear in logs or commits (use Android Preferences).
+6.  **Compilation:** For compilation, always use the following command and overwrite the file: `.\gradlew.bat compileDebugKotlin > gradle_out.txt 2>&1`
 
 ## Coding Best Practices
 

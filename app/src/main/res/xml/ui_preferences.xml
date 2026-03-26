@@ -3,6 +3,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory app:title="External Hardware (Funscripts)">
+        <SwitchPreference
+            app:key="@string/pref_key_handy_enabled"
+            app:title="@string/handy_enabled_title"
+            app:summary="@string/handy_enabled_summary"
+            app:defaultValue="false" />
         <EditTextPreference
             app:key="handy_connection_key"
             app:title="The Handy Connection Key"

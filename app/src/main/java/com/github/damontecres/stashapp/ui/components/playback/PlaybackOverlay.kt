@@ -163,6 +163,8 @@ fun PlaybackOverlay(
     videoDecoder: String?,
     audioDecoder: String?,
     spriteData: List<SpriteData>,
+    isHandyEnabled: Boolean = false,
+    showHandyIcon: Boolean = false,
     modifier: Modifier = Modifier,
     seekPreviewPlaceholder: Painter? = null,
     seekBarInteractionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -331,6 +333,8 @@ fun PlaybackOverlay(
                     scale = scale,
                     seekBarIntervals = uiConfig.preferences.playbackPreferences.seekBarSteps,
                     sfwMode = uiConfig.sfwMode,
+                    isHandyEnabled = isHandyEnabled,
+                    showHandyIcon = showHandyIcon,
                 )
             }
             if (markers.isNotEmpty()) {

@@ -255,6 +255,9 @@
     <string name="screensaver">Screensaver</string>
     
     <!-- Handy Integration -->
+    <string name="pref_key_handy_enabled" translatable="false">handy_enabled</string>
+    <string name="handy_enabled_title">Enable Handy Integration</string>
+    <string name="handy_enabled_summary">Turn the feature on or off globally</string>
     <string name="pref_key_handy_connection_key" translatable="false">handy_connection_key</string>
     <string name="handy_connection_key_title">The Handy Connection Key</string>
     <string name="handy_connection_key_summary">Enter your connection key to sync Funscripts</string>

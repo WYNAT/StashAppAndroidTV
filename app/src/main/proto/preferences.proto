@@ -128,6 +128,7 @@ message PlaybackPreferences {
   string handy_connection_key = 20;
   int64 handy_delay_compensation = 21;
   bool handy_cloud_bridge = 22;
+  bool handy_enabled = 23;
 }
 
 message CachePreferences {

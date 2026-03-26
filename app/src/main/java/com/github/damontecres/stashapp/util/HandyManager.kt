@@ -34,6 +34,13 @@ object HandyManager {
     private var connectionKeyPrefName: String = ""
     private var delayCompensationPrefName: String = ""
     private var cloudBridgePrefName: String = ""
+    private var handyEnabledPrefName: String = ""
+
+    var isHandyEnabled: Boolean
+        get() = prefs?.getBoolean(handyEnabledPrefName, false) ?: false
+        set(value) {
+            prefs?.edit()?.putBoolean(handyEnabledPrefName, value)?.apply()
+        }
 
     private val connectionKey: String
         get() = prefs?.getString(connectionKeyPrefName, "")?.trim() ?: ""
@@ -50,6 +57,7 @@ object HandyManager {
         connectionKeyPrefName = appContext.getString(R.string.pref_key_handy_connection_key)
         delayCompensationPrefName = appContext.getString(R.string.pref_key_handy_delay_compensation)
         cloudBridgePrefName = appContext.getString(R.string.pref_key_handy_cloud_bridge)
+        handyEnabledPrefName = appContext.getString(R.string.pref_key_handy_enabled)
         if (connectionKey.isNotBlank()) {
             syncServerTime()
         }
@@ -199,8 +207,14 @@ object HandyManager {
     }
 
     suspend fun setup(url: String): HandyResult = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        if (!isHandyEnabled) {
+            Log.w(TAG, "Handy setup skipped: Integration is globally disabled")
+            return@withContext HandyResult.GenericError("Integration is disabled")
+        }
+
         if (connectionKey.isBlank()) {
             Log.e(TAG, "Handy setup failed: Connection key is blank")
+            isHandyEnabled = false
             return@withContext HandyResult.GenericError("Connection key is blank")
         }
         
@@ -248,10 +262,15 @@ object HandyManager {
             client.newCall(request).execute().use { response ->
                 val result = parseHandyResponse(response)
                 Log.i(TAG, "Handy setup result: $result")
+                if (result !is HandyResult.Success) {
+                    Log.w(TAG, "Handy setup failed by API. Disabling Handy Integration.")
+                    isHandyEnabled = false
+                }
                 result
             }
         } catch (e: Exception) {
             Log.e(TAG, "Handy setup exception", e)
+            isHandyEnabled = false
             HandyResult.NetworkError(e.message ?: "Network error")
         }
     }
@@ -353,7 +372,7 @@ object HandyManager {
     }
 
     fun play(videoPositionMs: Long) {
-        if (connectionKey.isBlank()) return
+        if (!isHandyEnabled || connectionKey.isBlank()) return
         scope.launch {
             try {
                 val json = JSONObject().apply { 
@@ -375,7 +394,7 @@ object HandyManager {
     }
 
     fun stop() {
-        if (connectionKey.isBlank()) return
+        if (!isHandyEnabled || connectionKey.isBlank()) return
         scope.launch {
             try {
                 val request = Request.Builder()

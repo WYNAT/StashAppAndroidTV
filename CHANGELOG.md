@@ -4,6 +4,8 @@ All significant changes to the Stash App Android TV project are documented in th
 
 | Version | Type | Description | Impact |
 | :--- | :--- | :--- | :--- |
+| **v1.x.x+6** | `Feature` | Added global Enable/Disable toggle for The Handy integration (Auto-disable on error) and Gamepad Player UI quick toggle for immediate script loading in both UIs. | Low |
+| **v1.x.x+5** | `Documentation` | Added detailed Funscript fork feature documentation to README.md | Low |
 | **v1.x.x+4** | `Documentation` | Enhanced AGENTS.MD with functional testing and coding best practices guidelines | Low |
 | **v1.x.x+3** | `Documentation` | Translated MD files and comments into English | Low |
 | **v0.8.6** | `Documentation` | Added technical documentation (`DOCUMENTATION.md`) and the `AGENTS.MD` guide. Detailed UI paths and the Funscript feature. | Low |

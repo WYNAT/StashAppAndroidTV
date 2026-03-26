@@ -227,6 +227,62 @@ class PlaybackSceneFragment : PlaybackFragment() {
                 }
             }
         }
+
+        val handyToggleButton = view.findViewById<android.widget.ImageButton>(R.id.handy_toggle_button)
+        if (handyToggleButton != null) {
+            val scene = viewModel.scene.value
+            if (scene?.interactive == true) {
+                handyToggleButton.visibility = View.VISIBLE
+                val updateHandyIcon = {
+                    if (com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled) {
+                        handyToggleButton.setColorFilter(android.graphics.Color.WHITE)
+                        handyToggleButton.alpha = 1.0f
+                    } else {
+                        handyToggleButton.setColorFilter(android.graphics.Color.GRAY)
+                        handyToggleButton.alpha = 0.5f
+                    }
+                }
+                updateHandyIcon()
+                handyToggleButton.setOnClickListener {
+                    val enabled = !com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled
+                    com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled = enabled
+                    updateHandyIcon()
+                    if (enabled) {
+                        // Attempt to reconnect if enabled inline
+                        Toast.makeText(requireContext(), R.string.funscript_loading, Toast.LENGTH_SHORT).show()
+                        val funscriptUrl = scene.funscriptUrl
+                        if (!funscriptUrl.isNullOrBlank()) {
+                            lifecycleScope.launch {
+                                val exoPlayer = player as ExoPlayer
+                                val wasPlaying = exoPlayer.playWhenReady
+                                try {
+                                    exoPlayer.playWhenReady = false
+                                    val result = withTimeoutOrNull(30000L) {
+                                        com.github.damontecres.stashapp.util.HandyManager.initialize(requireContext())
+                                        com.github.damontecres.stashapp.util.HandyManager.setup(funscriptUrl)
+                                    }
+                                    if (result is com.github.damontecres.stashapp.util.HandyManager.HandyResult.Success) {
+                                        Toast.makeText(requireContext(), R.string.funscript_success, Toast.LENGTH_SHORT).show()
+                                        if (wasPlaying) {
+                                            com.github.damontecres.stashapp.util.HandyManager.play(exoPlayer.currentPosition)
+                                        }
+                                    } else {
+                                        updateHandyIcon()
+                                        Toast.makeText(requireContext(), R.string.funscript_error, Toast.LENGTH_SHORT).show()
+                                    }
+                                } finally {
+                                    exoPlayer.playWhenReady = wasPlaying
+                                }
+                            }
+                        }
+                    } else {
+                        com.github.damontecres.stashapp.util.HandyManager.stop()
+                    }
+                }
+            } else {
+                handyToggleButton.visibility = View.GONE
+            }
+        }
     }
 
     companion object {

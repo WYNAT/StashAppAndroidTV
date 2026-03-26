@@ -109,6 +109,7 @@ val uiPreferences =
         PreferenceGroup(
             R.string.external_hardware_funscripts,
             listOf(
+                StashPreference.HandyEnabled,
                 StashPreference.HandyConnectionKey,
                 StashPreference.HandyTestConnection,
                 StashPreference.HandyTestHardware,
