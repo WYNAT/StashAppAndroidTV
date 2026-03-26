@@ -142,6 +142,11 @@ class SettingsFragment : LeanbackSettingsFragmentCompat() {
             f.setTargetFragment(caller, 0)
             startPreferenceFragment(f)
             true
+        } else if (pref.key == "handy_connection_key") {
+            val f = StringEditTextPreferencesDialog("handy_connection_key")
+            f.setTargetFragment(caller, 0)
+            startPreferenceFragment(f)
+            true
         } else {
             super.onPreferenceDisplayDialog(caller, pref)
         }
@@ -764,6 +769,27 @@ class SettingsFragment : LeanbackSettingsFragmentCompat() {
             val root = super.onCreateView(inflater, container, savedInstanceState)
             val editTextView = root?.findViewById<EditText>(android.R.id.edit)
             editTextView?.inputType = InputType.TYPE_CLASS_NUMBER
+            return root
+        }
+    }
+
+    class StringEditTextPreferencesDialog(
+        key: String,
+    ) : LeanbackEditTextPreferenceDialogFragmentCompat() {
+        init {
+            val args = Bundle(1)
+            args.putString(ARG_KEY, key)
+            arguments = args
+        }
+
+        override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?,
+        ): View? {
+            val root = super.onCreateView(inflater, container, savedInstanceState)
+            val editTextView = root?.findViewById<EditText>(android.R.id.edit)
+            editTextView?.inputType = InputType.TYPE_CLASS_TEXT
             return root
         }
     }

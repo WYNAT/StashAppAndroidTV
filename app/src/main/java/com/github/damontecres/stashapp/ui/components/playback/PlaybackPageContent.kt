@@ -9,7 +9,9 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +19,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme as Material3Theme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -77,11 +85,12 @@ import androidx.media3.ui.compose.state.rememberNextButtonState
 import androidx.media3.ui.compose.state.rememberPlayPauseButtonState
 import androidx.media3.ui.compose.state.rememberPresentationState
 import androidx.media3.ui.compose.state.rememberPreviousButtonState
-import androidx.tv.material3.MaterialTheme
+import androidx.tv.material3.MaterialTheme as TvMaterialTheme
 import coil3.SingletonImageLoader
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.size.Scale
+import com.github.damontecres.stashapp.R
 import com.github.damontecres.stashapp.StashApplication
 import com.github.damontecres.stashapp.StashExoPlayer
 import com.github.damontecres.stashapp.api.fragment.FullSceneData
@@ -138,7 +147,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.microseconds
 import kotlin.time.Duration.Companion.milliseconds
 
-const val TAG = "PlaybackPageContent"
+private const val TAG = "PlaybackPageContent"
 
 class PlaybackViewModel : ViewModel() {
     private lateinit var server: StashServer
@@ -158,7 +167,9 @@ class PlaybackViewModel : ViewModel() {
     val markers = MutableLiveData<List<BasicMarker>>(listOf())
     val oCount = MutableLiveData(0)
     val rating100 = MutableLiveData(0)
+    val handyError = mutableStateOf<String?>(null)
     val spriteImageLoaded = MutableLiveData<List<SpriteData>>(emptyList())
+    private var handyJob: Job? = null
 
     private val _videoFilter = MutableLiveData<VideoFilter?>(null)
     val videoFilter = ThrottledLiveData(_videoFilter, 500L)
@@ -326,6 +337,62 @@ class PlaybackViewModel : ViewModel() {
             }
         }
 
+    private fun showToast(msgId: Int, duration: Int) {
+        viewModelScope.launch {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(StashApplication.getApplication(), msgId, duration).show()
+            }
+        }
+    }
+
+    private fun setupHandy(scene: FullSceneData) {
+        handyJob?.cancel()
+        if (scene.interactive) {
+            val funscriptUrl = scene.paths.funscript
+            if (!funscriptUrl.isNullOrBlank()) {
+                player.pause()
+                showToast(R.string.funscript_loading, Toast.LENGTH_SHORT)
+                
+                val isLocalIp = funscriptUrl.contains("//192.168.") || 
+                                funscriptUrl.contains("//10.") || 
+                                funscriptUrl.contains("//172.") || 
+                                funscriptUrl.contains("//localhost") || 
+                                funscriptUrl.contains("//127.0.0.1")
+                
+                handyJob = viewModelScope.launch {
+                    try {
+                        if (isLocalIp) {
+                            showToast(R.string.handy_cloud_bridge_uploading, Toast.LENGTH_SHORT)
+                        }
+                        
+                        val result = kotlinx.coroutines.withTimeoutOrNull(30000L) {
+                            com.github.damontecres.stashapp.util.HandyManager.initialize(StashApplication.getApplication())
+                            com.github.damontecres.stashapp.util.HandyManager.setup(funscriptUrl)
+                        } ?: com.github.damontecres.stashapp.util.HandyManager.HandyResult.GenericError("Timeout")
+
+                        if (result is com.github.damontecres.stashapp.util.HandyManager.HandyResult.Success) {
+                            showToast(R.string.funscript_success, Toast.LENGTH_SHORT)
+                            Log.i(TAG, "Handy setup successful")
+                        } else {
+                            val errorMsg = result.toString()
+                            viewModelScope.launch {
+                                withContext(Dispatchers.Main) {
+                                    handyError.value = "The Handy cloud could not process the funscript.\n\nError: $errorMsg\n\nURL: $funscriptUrl\n\nNote: If you use a local IP, the Handy cloud cannot reach it."
+                                }
+                            }
+                            Log.e(TAG, "Handy setup failed: $errorMsg")
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Handy setup error", e)
+                        showToast(R.string.funscript_error, Toast.LENGTH_LONG)
+                    } finally {
+                        player.play()
+                    }
+                }
+            }
+        }
+    }
+
     private fun refreshScene(sceneId: String) {
         // Fetch o count & markers
         viewModelScope.launch(sceneJob + exceptionHandler) {
@@ -351,6 +418,9 @@ class PlaybackViewModel : ViewModel() {
                 }
             }
             this@PlaybackViewModel.scene.value = scene
+            if (scene != null) {
+                setupHandy(scene)
+            }
         }
     }
 
@@ -707,6 +777,28 @@ fun PlaybackPageContent(
                             ).show()
                     }
                 }
+
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    if (viewModel.scene.value?.interactive == true) {
+                        if (isPlaying) {
+                            com.github.damontecres.stashapp.util.HandyManager.play(player.currentPosition)
+                        } else {
+                            com.github.damontecres.stashapp.util.HandyManager.stop()
+                        }
+                    }
+                }
+
+                override fun onPositionDiscontinuity(
+                    oldPosition: Player.PositionInfo,
+                    newPosition: Player.PositionInfo,
+                    reason: Int
+                ) {
+                    if (viewModel.scene.value?.interactive == true && reason == Player.DISCONTINUITY_REASON_SEEK) {
+                        if (player.isPlaying) {
+                            com.github.damontecres.stashapp.util.HandyManager.play(newPosition.contentPositionMs)
+                        }
+                    }
+                }
             },
         )
 
@@ -820,7 +912,7 @@ fun PlaybackPageContent(
                         modifier =
                             Modifier
                                 .align(Alignment.BottomStart)
-                                .background(MaterialTheme.colorScheme.border)
+                                .background(Material3Theme.colorScheme.outline)
                                 .clip(RectangleShape)
                                 .height(3.dp)
                                 .fillMaxWidth(percent),
@@ -980,6 +1072,54 @@ fun PlaybackPageContent(
                 player.play()
             }
         }
+        AnimatedVisibility(viewModel.handyError.value != null) {
+            val error = viewModel.handyError.value
+            if (error != null) {
+                LaunchedEffect(Unit) {
+                    playingBeforeDialog = player.isPlaying
+                    player.pause()
+                }
+                androidx.compose.ui.window.Dialog(
+                    onDismissRequest = {
+                        viewModel.handyError.value = null
+                        if (playingBeforeDialog) {
+                            player.play()
+                        }
+                    }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .background(Material3Theme.colorScheme.surface, RoundedCornerShape(8.dp))
+                            .padding(24.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                "Handy Funscript Error",
+                                style = Material3Theme.typography.headlineSmall
+                            )
+                            Text(
+                                error
+                            )
+                            Button(
+                                onClick = {
+                                    viewModel.handyError.value = null
+                                    if (playingBeforeDialog) {
+                                        player.play()
+                                    }
+                                }
+                            ) {
+                                Text("OK")
+                            }
+                        }
+                    }
+                }
+            }
+        }
         SearchForDialog(
             show = markersEnabled && createMarkerPosition >= 0,
             uiConfig = uiConfig,
@@ -1042,7 +1182,7 @@ fun PlaybackPageContent(
                         modifier =
                             Modifier
                                 .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.background.copy(alpha = .75f)),
+                                .background(Material3Theme.colorScheme.background.copy(alpha = 0.75f)),
                         server = server,
                         scene = scene,
                         performers = performers,
@@ -1095,7 +1235,7 @@ fun Player.setupFinishedBehavior(
 
         else -> {
             Log.w(
-                PlaybackSceneFragment.TAG,
+                TAG,
                 "Unknown playbackFinishedBehavior: $finishedBehavior",
             )
         }

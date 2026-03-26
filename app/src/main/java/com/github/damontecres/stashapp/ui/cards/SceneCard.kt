@@ -16,8 +16,10 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -95,6 +97,15 @@ fun SceneCard(
                 Modifier
                     .enableMarquee(it)
                     .align(Alignment.Center),
+                additionalIcons = {
+                    if (item?.interactive == true) {
+                        val gamepadIcon = stringResource(R.string.fa_gamepad)
+                        withStyle(SpanStyle(fontFamily = com.github.damontecres.stashapp.ui.FontAwesome)) {
+                            append(gamepadIcon)
+                        }
+                        append("  ")
+                    }
+                }
             )
         },
         imageOverlay = {

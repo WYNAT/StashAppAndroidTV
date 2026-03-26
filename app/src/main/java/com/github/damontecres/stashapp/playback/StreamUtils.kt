@@ -200,7 +200,7 @@ fun getStreamDecision(
         scene.streamUrl != null
     ) {
         Log.v(
-            PlaybackSceneFragment.TAG,
+            TAG,
             "Video (${scene.videoCodec}), audio (${scene.audioCodec}), & container (${scene.format}) supported",
         )
         return StreamDecision(
@@ -213,7 +213,7 @@ fun getStreamDecision(
         )
     } else if (mode == PlaybackMode.ForcedDirectPlay) {
         Log.v(
-            PlaybackSceneFragment.TAG,
+            TAG,
             "Forcing direct play for video (${scene.videoCodec}), audio (${scene.audioCodec}), & container (${scene.format})",
         )
         return StreamDecision(
@@ -227,7 +227,7 @@ fun getStreamDecision(
     } else {
         // Transcode
         Log.v(
-            PlaybackSceneFragment.TAG,
+            TAG,
             "Transcoding video (${scene.videoCodec}), audio (${scene.audioCodec}), & container (${scene.format})",
         )
         return StreamDecision(

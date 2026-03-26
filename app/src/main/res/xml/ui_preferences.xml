@@ -2,6 +2,43 @@
 <androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <PreferenceCategory app:title="External Hardware (Funscripts)">
+        <EditTextPreference
+            app:key="handy_connection_key"
+            app:title="The Handy Connection Key"
+            app:summary="Enter your connection key to sync Funscripts"
+            android:dialogTitle="The Handy Connection Key"
+            android:dialogMessage="Enter your connection key to sync Funscripts"
+            app:useSimpleSummaryProvider="true"
+            android:inputType="text"
+            android:defaultValue="" />
+        <Preference
+            app:key="handy_test_connection"
+            app:title="@string/handy_test_connection_title"
+            app:summary="@string/handy_test_connection_summary" />
+        <Preference
+            app:key="handy_test_hardware"
+            app:title="@string/handy_test_hardware_title"
+            app:summary="@string/handy_test_hardware_summary" />
+        <EditTextPreference
+            app:key="@string/pref_key_handy_delay_compensation"
+            app:title="@string/handy_delay_compensation_title"
+            app:summary="@string/handy_delay_compensation_summary"
+            android:dialogTitle="@string/handy_delay_compensation_title"
+            app:useSimpleSummaryProvider="true"
+            android:inputType="numberSigned"
+            android:defaultValue="0" />
+        <Preference
+            app:key="handy_sync_time"
+            app:title="@string/handy_sync_time_title"
+            app:summary="@string/handy_sync_time_summary" />
+        <SwitchPreference
+            app:key="@string/pref_key_handy_cloud_bridge"
+            app:title="@string/handy_cloud_bridge_title"
+            app:summary="@string/handy_cloud_bridge_summary"
+            app:defaultValue="true" />
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="Advanced UI">
         <SwitchPreference
             app:key="@string/pref_key_ui_remember_tab"

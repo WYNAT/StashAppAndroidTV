@@ -319,6 +319,7 @@ class StashImageCardView(
     fun setUpExtraRow(
         iconMap: EnumMap<DataType, Int>,
         oCounter: Int?,
+        interactive: Boolean = false,
         stringBuilder: (SpannableStringBuilder.() -> Unit)? = null,
     ) {
         val countStrings =
@@ -346,9 +347,22 @@ class StashImageCardView(
                         Spannable.SPAN_INCLUSIVE_INCLUSIVE,
                     )
                 }
+                if (interactive) {
+                    if (countStrings.isNotEmpty()) {
+                        append(ICON_SPACING)
+                    }
+                    val start = length
+                    append(context.getString(R.string.fa_gamepad))
+                    setSpan(
+                        FontSpan(FA_FONT),
+                        start,
+                        start + 1,
+                        Spannable.SPAN_INCLUSIVE_INCLUSIVE,
+                    )
+                }
                 stringBuilder?.invoke(this)
                 if (oCounter != null && oCounter > 0) {
-                    if (countStrings.isNotEmpty()) {
+                    if (countStrings.isNotEmpty() || interactive) {
                         // Add space after previous icons
                         append(ICON_SPACING)
                     }

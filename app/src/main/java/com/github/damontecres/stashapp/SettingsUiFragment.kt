@@ -121,6 +121,31 @@ class SettingsUiFragment : LeanbackPreferenceFragmentCompat() {
                 true
             }
         }
+
+        val handyTestHardwarePref = findPreference<Preference>("handy_test_hardware")
+        handyTestHardwarePref?.setOnPreferenceClickListener {
+            lifecycleScope.launch {
+                com.github.damontecres.stashapp.util.HandyManager.initialize(requireContext())
+                Toast.makeText(requireContext(), "Starting hardware test...", Toast.LENGTH_SHORT).show()
+                val result = com.github.damontecres.stashapp.util.HandyManager.testHardware()
+                val toastMsg = if (result is com.github.damontecres.stashapp.util.HandyManager.HandyResult.Success) "Hardware test successful!" else "Hardware Test Failed: $result"
+                Toast.makeText(requireContext(), toastMsg, Toast.LENGTH_LONG).show()
+            }
+            true
+        }
+
+        val handyTestConnectionPref = findPreference<Preference>("handy_test_connection")
+
+        val handySyncTimePref = findPreference<Preference>("handy_sync_time")
+        handySyncTimePref?.setOnPreferenceClickListener {
+            viewLifecycleOwner.lifecycleScope.launch(StashCoroutineExceptionHandler()) {
+                com.github.damontecres.stashapp.util.HandyManager.initialize(requireContext())
+                Toast.makeText(requireContext(), "Measuring latency...", Toast.LENGTH_SHORT).show()
+                val (rtt, offset) = com.github.damontecres.stashapp.util.HandyManager.syncServerTimeV2()
+                Toast.makeText(requireContext(), "Ping: $rtt ms\nOffset: $offset ms", Toast.LENGTH_LONG).show()
+            }
+            true
+        }
     }
 
     override fun onViewCreated(

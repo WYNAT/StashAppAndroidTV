@@ -136,6 +136,7 @@ val slimScenePreview =
         o_counter = 2,
         organized = true,
         resume_time = null,
+        interactive = true,
         created_at = "2025-01-01",
         updated_at = "2025-01-01",
         files =
@@ -167,6 +168,7 @@ val slimScenePreview =
                 stream = null,
                 sprite = null,
                 caption = null,
+                funscript = null,
             ),
         scene_markers = listOf(),
         galleries = listOf(),

@@ -107,6 +107,17 @@ val basicPreferences =
 val uiPreferences =
     listOf(
         PreferenceGroup(
+            R.string.external_hardware_funscripts,
+            listOf(
+                StashPreference.HandyConnectionKey,
+                StashPreference.HandyTestConnection,
+                StashPreference.HandyTestHardware,
+                StashPreference.HandyDelayCompensation,
+                StashPreference.HandySyncTime,
+                StashPreference.HandyCloudBridge,
+            ),
+        ),
+        PreferenceGroup(
             R.string.advanced_ui,
             listOf(
                 StashPreference.AutoSubmitPin,

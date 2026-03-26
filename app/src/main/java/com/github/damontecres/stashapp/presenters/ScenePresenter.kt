@@ -37,7 +37,7 @@ class ScenePresenter(
         dataTypeMap[DataType.MARKER] = item.scene_markers.size
         dataTypeMap[DataType.GALLERY] = item.galleries.size
 
-        cardView.setUpExtraRow(dataTypeMap, item.o_counter)
+        cardView.setUpExtraRow(dataTypeMap, item.o_counter, item.interactive)
 
         cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT)
 

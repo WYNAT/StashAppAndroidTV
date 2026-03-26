@@ -32,6 +32,7 @@
     <string name="fa_house" translatable="false">&#xf015;</string>
     <string name="fa_closed_captioning" translatable="false">&#xf20a;</string>
     <string name="fa_thumbs_up" translatable="false">&#xf164;</string>
+    <string name="fa_gamepad" translatable="false">&#xf11b;</string>
 
 
     <string name="go_to">Go to</string>
@@ -132,6 +133,17 @@
     <string name="value_milliseconds" formatted="true">%1$s ms</string>
     <string name="save_for_gallery">Save for gallery</string>
     <string name="basic_interface">Interface</string>
+    <string name="external_hardware_funscripts">External Hardware (Funscripts)</string>
+
+    <string name="handy_test_connection_title">Test Connection</string>
+    <string name="handy_test_connection_summary">Verify the connection key works</string>
+    <string name="handy_delay_compensation_title">Server Compensation (ms)</string>
+    <string name="handy_delay_compensation_summary">Adjust the synchronization delay (e.g. -150 or 200)</string>
+    <string name="handy_test_hardware_title">Test Hardware Slider</string>
+    <string name="handy_test_hardware_summary">Move slider to 0 then 100 within 3 seconds</string>
+    <string name="pref_key_handy_delay_compensation" translatable="false">handy_delay_compensation</string>
+    <string name="handy_sync_time_title">Sync Time Now</string>
+    <string name="handy_sync_time_summary">Measure roundtrip delay to the Handy servers</string>
     <string name="manage_servers">Manage Servers</string>
     <string name="add_remove_servers_summary">Add, remove, or change servers</string>
     <string name="play_video_previews">Play video previews</string>
@@ -241,5 +253,18 @@
     <string name="enable_screensaver">Enable screensaver</string>
     <string name="screensaver_filter">Set filter for screensaver</string>
     <string name="screensaver">Screensaver</string>
+    
+    <!-- Handy Integration -->
+    <string name="pref_key_handy_connection_key" translatable="false">handy_connection_key</string>
+    <string name="handy_connection_key_title">The Handy Connection Key</string>
+    <string name="handy_connection_key_summary">Enter your connection key to sync Funscripts</string>
+    <string name="pref_key_handy_cloud_bridge" translatable="false">handy_cloud_bridge</string>
+    <string name="handy_cloud_bridge_title">Handy Cloud Bridge (Local IP support)</string>
+    <string name="handy_cloud_bridge_summary">Upload local funscripts to Handy Cloud for playback</string>
+    <string name="handy_cloud_bridge_uploading">Bridging local script to Handy Cloud...</string>
+
+    <string name="funscript_loading">Lade interaktives Skript...</string>
+    <string name="funscript_success">Skript erfolgreich geladen.</string>
+    <string name="funscript_error">Fehler beim Laden des Skripts (Timeout).</string>
 
 </resources>

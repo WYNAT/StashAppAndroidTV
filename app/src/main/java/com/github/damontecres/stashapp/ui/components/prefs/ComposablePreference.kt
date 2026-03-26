@@ -114,6 +114,35 @@ fun <T> ComposablePreference(
                     }
                 }
 
+                StashPreference.HandyTestConnection -> {
+                    kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                        com.github.damontecres.stashapp.util.HandyManager.initialize(context)
+                        Toast.makeText(context, "Testing connection...", Toast.LENGTH_SHORT).show()
+                        val (success, msg) = com.github.damontecres.stashapp.util.HandyManager.testConnection()
+                        val toastMsg = if (success) "Connection Successful!" else "Connection Failed\n$msg"
+                        Toast.makeText(context, toastMsg, Toast.LENGTH_LONG).show()
+                    }
+                }
+
+                StashPreference.HandyTestHardware -> {
+                    kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                        com.github.damontecres.stashapp.util.HandyManager.initialize(context)
+                        Toast.makeText(context, "Starting hardware test...", Toast.LENGTH_SHORT).show()
+                        val result = com.github.damontecres.stashapp.util.HandyManager.testHardware()
+                        val toastMsg = if (result is com.github.damontecres.stashapp.util.HandyManager.HandyResult.Success) "Hardware test successful!" else "Hardware Test Failed: $result"
+                        Toast.makeText(context, toastMsg, Toast.LENGTH_LONG).show()
+                    }
+                }
+                
+                StashPreference.HandySyncTime -> {
+                    kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                        com.github.damontecres.stashapp.util.HandyManager.initialize(context)
+                        Toast.makeText(context, "Measuring latency...", Toast.LENGTH_SHORT).show()
+                        val (rtt, offset) = com.github.damontecres.stashapp.util.HandyManager.syncServerTimeV2()
+                        Toast.makeText(context, "Ping: $rtt ms\nOffset: $offset ms", Toast.LENGTH_LONG).show()
+                    }
+                }
+
                 else -> {}
             }
         }

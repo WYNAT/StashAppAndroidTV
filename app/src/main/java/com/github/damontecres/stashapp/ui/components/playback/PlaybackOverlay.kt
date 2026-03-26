@@ -649,6 +649,7 @@ private fun PlaybackOverlayPreview() {
                     streams = mapOf(),
                     spriteUrl = "",
                     vttUrl = "",
+                    funscriptUrl = "",
                     duration = 600.2,
                     resumeTime = 0.0,
                     videoCodec = "h264",

@@ -40,7 +40,7 @@ android {
 
     sourceSets {
         getByName("main") {
-            res.srcDirs("src/main/res", "$buildDir/generated/res/server")
+            res.srcDirs("src/main/res", "${layout.buildDirectory.get().asFile}/generated/res/server")
         }
         getByName("androidTest").assets.srcDir("$projectDir/schemas")
     }
@@ -56,8 +56,8 @@ android {
         minSdk = 23
         targetSdk = 36
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        versionCode = gitTags.trim().lines().size
-        versionName = gitDescribe.trim().removePrefix("v").ifBlank { "0.0.0" }
+        versionCode = gitTags.trim().lines().size + 1
+        versionName = "0.8.8"
         vectorDrawables.useSupportLibrary = true
     }
     signingConfigs {
@@ -185,13 +185,14 @@ tasks.named("generateAppApolloSources") {
     dependsOn("createGraphqlSchema")
 }
 
-tasks.register<com.github.damontecres.buildsrc.ParseStashStrings>("generateStrings") {
-    sourceDirectory = File("$projectDir/../stash-server/ui/v2.5/src/locales")
-    outputDirectory = File("$buildDir/generated/res/server")
+val localesDir = File("$projectDir/../stash-server/ui/v2.5/src/locales")
+if (localesDir.exists()) {
+    tasks.register<com.github.damontecres.buildsrc.ParseStashStrings>("generateStrings") {
+        sourceDirectory = localesDir
+        outputDirectory = File("${layout.buildDirectory.get().asFile}/generated/res/server")
+    }
+    tasks.preBuild.dependsOn("generateStrings")
 }
-
-// tasks.preBuild.dependsOn("generateStrings")
-tasks.preBuild.dependsOn("generateStrings")
 tasks.clean.dependsOn("cleanGraphqlSchema")
 
 protobuf {

@@ -223,6 +223,67 @@ sealed interface StashPreference<T> {
                     }
                 },
             )
+            
+        val HandyConnectionKey =
+            StashStringPreference(
+                title = R.string.handy_connection_key_title,
+                prefKey = R.string.pref_key_handy_connection_key,
+                defaultValue = "",
+                getter = { it.playbackPreferences.handyConnectionKey },
+                setter = { prefs, value ->
+                    prefs.updatePlaybackPreferences { handyConnectionKey = value }
+                },
+                summary = R.string.handy_connection_key_summary,
+            )
+            
+        val HandyTestConnection =
+            StashClickablePreference(
+                title = R.string.handy_test_connection_title,
+                summary = R.string.handy_test_connection_summary,
+                getter = {},
+                setter = { prefs, _ -> prefs }
+            )
+            
+        val HandyDelayCompensation =
+            StashStringPreference(
+                title = R.string.handy_delay_compensation_title,
+                prefKey = R.string.pref_key_handy_delay_compensation,
+                defaultValue = "0",
+                getter = { it.playbackPreferences.handyDelayCompensation.toString() },
+                setter = { prefs, value ->
+                    prefs.updatePlaybackPreferences { handyDelayCompensation = value.toLongOrNull() ?: 0L }
+                },
+                summary = R.string.handy_delay_compensation_summary,
+            )
+            
+        val HandySyncTime =
+            StashClickablePreference(
+                title = R.string.handy_sync_time_title,
+                summary = R.string.handy_sync_time_summary,
+                getter = {},
+                setter = { prefs, _ -> prefs }
+            )
+
+        val HandyTestHardware =
+            StashClickablePreference(
+                title = R.string.handy_test_hardware_title,
+                summary = R.string.handy_test_hardware_summary,
+                getter = {},
+                setter = { prefs, _ -> prefs }
+            )
+            
+        val HandyCloudBridge =
+            StashSwitchPreference(
+                title = R.string.handy_cloud_bridge_title,
+                prefKey = R.string.pref_key_handy_cloud_bridge,
+                defaultValue = true,
+                getter = { it.playbackPreferences.handyCloudBridge },
+                setter = { prefs, value ->
+                    prefs.updatePlaybackPreferences { handyCloudBridge = value }
+                },
+                summary = R.string.handy_cloud_bridge_summary,
+            )
+
         val FinishedBehavior =
             StashChoicePreference<PlaybackFinishBehavior>(
                 title = R.string.playback_finished_behavior,
