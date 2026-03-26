@@ -112,32 +112,23 @@ class StashApplication : Application() {
                 putLong(VERSION_CODE_CURRENT_KEY, newVersionCode)
             }
             if (currentVersion != null) {
-                try {
-                    AppUpgradeHandler(
-                        this@StashApplication,
-                        Version.fromString(currentVersion),
-                        Version.fromString(pkgInfo.versionName!!),
-                    ).run()
-                } catch (ex: Exception) {
-                    Log.e(TAG, "Exception during app upgrade", ex)
-                }
+                // Run upgrade handler in a background thread to avoid blocking startup
+                Thread {
+                    try {
+                        AppUpgradeHandler(
+                            this@StashApplication,
+                            Version.fromString(currentVersion),
+                            Version.fromString(pkgInfo.versionName!!),
+                        ).run()
+                    } catch (ex: Exception) {
+                        Log.e(TAG, "Exception during app upgrade", ex)
+                    }
+                }.start()
             }
         }
-
-        setupDB()
     }
 
     override fun getResources(): Resources = Restring.wrapResources(applicationContext, super.getResources())
-
-    private fun setupDB() {
-        val dbName = getString(R.string.app_name)
-        database =
-            Room
-                .databaseBuilder(this, AppDatabase::class.java, dbName)
-                .addMigrations(MIGRATION_4_TO_5)
-                .fallbackToDestructiveMigration(dropAllTables = true)
-                .build()
-    }
 
     @Deprecated("Deprecated in Java")
     override fun onLowMemory() {
@@ -169,7 +160,7 @@ class StashApplication : Application() {
 
     companion object {
         private lateinit var application: StashApplication
-        private lateinit var database: AppDatabase
+        private var database: AppDatabase? = null
         lateinit var navigationManager: NavigationManager
         var currentServer: StashServer? = null
 
@@ -187,7 +178,20 @@ class StashApplication : Application() {
             }
         }
 
-        fun getDatabase(): AppDatabase = database
+        @Synchronized
+        fun getDatabase(): AppDatabase {
+            if (database == null) {
+                val app = getApplication()
+                val dbName = app.getString(R.string.app_name)
+                database =
+                    Room
+                        .databaseBuilder(app, AppDatabase::class.java, dbName)
+                        .addMigrations(MIGRATION_4_TO_5)
+                        .fallbackToDestructiveMigration(dropAllTables = true)
+                        .build()
+            }
+            return database!!
+        }
 
         const val TAG = "StashApplication"
         const val VERSION_NAME_PREVIOUS_KEY = "VERSION_NAME_PREVIOUS_NAME"

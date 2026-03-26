@@ -65,8 +65,24 @@ The Funscript feature allows synchronization of "The Handy" devices directly via
 *   **Upload Errors:** If the upload to the hosting API fails, a fallback to the original URL is attempted (which will fail for local IPs).
 
 ---
-
-## Architecture Patterns & Conventions
+ 
+ ## Performance Optimization (v0.8.14)
+ 
+ To ensure a fast and responsive startup experience on low-end Android TV devices, several optimization patterns have been implemented:
+ 
+ 1.  **Stale-While-Revalidate (Server Connection)**:
+     -   The `ServerViewModel` and `StashServer` now support optimistic UI entry. If a server has been previously configured and its settings are cached in `SharedPreferences`, the app will set the `currentServer` and hide the loading state immediately.
+     -   The mandatory metadata refresh (`updateServerPrefs`) still occurs in the background, ensuring the UI eventually updates with the latest server configuration without blocking the user.
+ 
+ 2.  **Lazy Database Initialization**:
+     -   Room database initialization (`AppDatabase`) has been moved from `StashApplication.onCreate` to a lazy property in the companion object. The database is only built on its first actual access (e.g., when a DAO is requested), reducing the initial overhead of `StashApplication`.
+ 
+ 3.  **Asynchronous App Upgrade Handling**:
+     -   `AppUpgradeHandler` now runs in a background thread. This prevents migration logic (which often involves synchronous I/O) from blocking the main thread during the first start after an app update.
+ 
+ ---
+ 
+ ## Architecture Patterns & Conventions
 
 *   **Dependency Injection:** Manual DI or use of singletons for global managers (e.g., `HandyManager`, `ApolloClient`).
 *   **API Communication:** GraphQL via Apollo Android.

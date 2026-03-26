@@ -54,24 +54,47 @@ open class ServerViewModel : ViewModel() {
     }
 
     fun switchServer(newServer: StashServer?) {
-        _serverConnection.value = ServerConnection.Pending
-        if (newServer != null) {
-            viewModelScope.launch(StashCoroutineExceptionHandler(autoToast = true)) {
-                try {
-                    newServer.updateServerPrefs()
-                    StashServer.setCurrentStashServer(StashApplication.getApplication(), newServer)
-                    _currentServer.value = newServer
-                    _serverConnection.value = ServerConnection.Success
-                    submit(Destination.Main, true)
-                } catch (ex: Exception) {
-                    Log.e(TAG, "Error switching servers", ex)
-                    _currentServer.setValueNoCheck(null)
-                    _serverConnection.value = ServerConnection.Failure(newServer, ex)
-                }
-            }
-        } else {
+        if (newServer == null) {
             _currentServer.setValueNoCheck(null)
             _serverConnection.value = ServerConnection.NotConfigured
+            return
+        }
+
+        _serverConnection.value = ServerConnection.Pending
+
+        // Optimistic update if we have cached preferences
+        if (newServer.hasCachedPreferences()) {
+            Log.i(TAG, "Using cached preferences for ${newServer.url}")
+            StashServer.setCurrentStashServer(StashApplication.getApplication(), newServer)
+            _currentServer.value = newServer
+            _serverConnection.value = ServerConnection.Success
+            submit(Destination.Main, true)
+        }
+
+        viewModelScope.launch(StashCoroutineExceptionHandler(autoToast = true)) {
+            try {
+                newServer.updateServerPrefs()
+                StashServer.setCurrentStashServer(StashApplication.getApplication(), newServer)
+                if (_currentServer.value != newServer) {
+                    _currentServer.value = newServer
+                }
+                if (_serverConnection.value != ServerConnection.Success) {
+                    _serverConnection.value = ServerConnection.Success
+                }
+
+                if (command.value?.destination != Destination.Main) {
+                    submit(Destination.Main, true)
+                }
+            } catch (ex: Exception) {
+                Log.e(TAG, "Error switching servers", ex)
+                // Only fail if we don't already have a working session
+                if (_currentServer.value == null) {
+                    _currentServer.setValueNoCheck(null)
+                    _serverConnection.value = ServerConnection.Failure(newServer, ex)
+                } else {
+                    Log.w(TAG, "Failed to refresh server prefs, but continuing with cached version")
+                }
+            }
         }
     }
 

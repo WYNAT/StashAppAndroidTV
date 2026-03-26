@@ -47,6 +47,11 @@ data class StashServer(
         return serverPreferences
     }
 
+    /**
+     * Returns true if the server has cached preferences
+     */
+    fun hasCachedPreferences(): Boolean = serverPreferences.preferences.contains(ServerPreferences.PREF_SERVER_VERSION)
+
     override fun toString(): String = "StashServer(url=$url, apiKey?=${apiKey.isNotNullOrBlank()})"
 
     override fun equals(other: Any?): Boolean {

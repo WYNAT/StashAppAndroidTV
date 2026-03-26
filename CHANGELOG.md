@@ -4,6 +4,7 @@ All significant changes to the Stash App Android TV project are documented in th
 
 | Version | Type | Description | Impact |
 | :--- | :--- | :--- | :--- |
+| **v0.8.14** | `Feature` | Optimized startup performance: implemented stale-while-revalidate for server connection, lazy database initialization, and asynchronous app upgrade handling to significantly reduce startup time on slow devices. | Medium |
 | **v0.8.13** | `Fix` | Fixed Handy auto-disable persistence by ensuring the integration is deactivated on all failure paths (timeouts/mode-errors) and adding a guard to skip loading if disabled. | Low |
 | **v0.8.12** | `Fix` | Fixed Dark Mode visibility in the Handy error dialog by ensuring theme-aware text colors (onSurface/error) on dark backgrounds. | Low |
 | **v0.8.11** | `Fix` | ACHIEVED ZERO-WARNING BUILD. Systematically resolved 200+ compiler warnings (unchecked casts, deprecated Focus/SDK_INT APIs, Resolution enums, and redundant null-checks). | Low |
