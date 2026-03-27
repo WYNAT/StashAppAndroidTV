@@ -57,6 +57,8 @@ class StudioPresenter(
         }
     }
 
+    override fun getPreloadUrl(item: StudioData): String? = item.image_path
+
     companion object {
         private const val TAG = "StudioPresenter"
 

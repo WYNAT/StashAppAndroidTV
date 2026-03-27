@@ -43,6 +43,7 @@ import com.github.damontecres.stashapp.views.models.PerformerViewModel
 class PerformerFragment : TabbedFragment(DataType.PERFORMER.name) {
     private val viewModel: PerformerViewModel by viewModels()
 
+    @Suppress("LongMethod", "MagicNumber")
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,

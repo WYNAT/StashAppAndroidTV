@@ -118,6 +118,8 @@ class TagPresenter(
                 )
             }
 
+    override fun getPreloadUrl(item: TagData): String? = item.image_path
+
     companion object {
         private const val TAG = "TagPresenter"
 

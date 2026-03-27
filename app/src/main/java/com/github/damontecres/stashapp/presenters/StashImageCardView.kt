@@ -100,6 +100,7 @@ class StashImageCardView(
     val imageView: ImageView get() = super.mainImageView!!
 
     private val iconTextView: TextView
+    private lateinit var iconRow: View
     private val content2: TextView
 
     private val cardOverlay = findViewById<View>(R.id.card_overlay)
@@ -138,7 +139,7 @@ class StashImageCardView(
         val infoArea = findViewById<ViewGroup>(R.id.info_field)
         val extraContent =
             LayoutInflater.from(context).inflate(R.layout.image_card_extra_content_row, infoArea)
-        val iconRow = LayoutInflater.from(context).inflate(R.layout.image_card_icon_row, infoArea)
+        iconRow = LayoutInflater.from(context).inflate(R.layout.image_card_icon_row, infoArea)
 
         val titleTextView = findViewById<TextView>(androidx.leanback.R.id.title_text)
         titleTextView.enableMarquee(false)
@@ -255,6 +256,8 @@ class StashImageCardView(
             lp.height = scaledHeight
             mainView.layoutParams = lp
         }
+
+        imageView.maxHeight = scaledHeight
 
         if (paddingDp > 0) {
             val scale = resources.displayMetrics.density
@@ -379,6 +382,7 @@ class StashImageCardView(
                     append(oCounter.toString())
                 }
             }
+        iconRow.visibility = if (iconTextView.text.isNullOrEmpty()) View.GONE else View.VISIBLE
     }
 
     fun showVideo() {
@@ -476,6 +480,7 @@ class StashImageCardView(
         videoView?.player = null
 
         imageView.setPadding(0)
+        imageView.maxHeight = Int.MAX_VALUE
         if (imageView.layoutParams.height != ViewGroup.LayoutParams.MATCH_PARENT) {
             imageView.updateLayoutParams {
                 height = ViewGroup.LayoutParams.MATCH_PARENT
@@ -492,6 +497,8 @@ class StashImageCardView(
 
         topRightImageOverlay.visibility = View.INVISIBLE
         contentExtra = null
+        iconRow.visibility = View.GONE
+        iconTextView.text = null
     }
 
     fun setTopRightImage(

@@ -71,6 +71,8 @@ open class PerformerPresenter(
             null
         }
 
+    override fun getPreloadUrl(item: PerformerData): String? = item.image_path
+
     companion object {
         private const val TAG = "CardPresenter"
 

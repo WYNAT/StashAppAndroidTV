@@ -75,6 +75,8 @@ class MarkerPresenter(
             },
         )
 
+    override fun getPreloadUrl(item: MarkerData): String? = item.screenshot
+
     companion object {
         private const val TAG = "MarkerPresenter"
 

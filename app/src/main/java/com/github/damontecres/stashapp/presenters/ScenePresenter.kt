@@ -115,6 +115,8 @@ class ScenePresenter(
                 )
             }
 
+    override fun getPreloadUrl(item: SlimSceneData): String? = item.paths.screenshot
+
     companion object {
         private const val TAG = "ScenePresenter"
 

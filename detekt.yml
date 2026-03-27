@@ -1,0 +1,101 @@
+config:
+  validation: true
+  warningsAsErrors: false
+  checkExhaustiveness: false
+  excludes: []
+
+processors:
+  active: true
+  exclude:
+    - 'DetektProgressListener'
+
+console-reports:
+  active: true
+  exclude:
+     - 'ProjectStatisticsReport'
+     - 'ComplexityReport'
+     - 'NotificationReport'
+     - 'IssuesReport'
+     - 'FileBasedIssuesReport'
+
+complexity:
+  active: true
+  CognitiveComplexMethod:
+    active: false
+    allowedComplexity: 15
+  ComplexCondition:
+    active: true
+    allowedConditions: 4
+  ComplexInterface:
+    active: false
+  CyclomaticComplexMethod:
+    active: true
+    allowedComplexity: 30
+  LargeClass:
+    active: true
+    allowedLines: 1000
+  LongMethod:
+    active: true
+    allowedLines: 150
+  LongParameterList:
+    active: true
+    allowedFunctionParameters: 12
+    allowedConstructorParameters: 20
+    ignoreDefaultParameters: true
+  NestedBlockDepth:
+    active: true
+    allowedDepth: 6
+  TooManyFunctions:
+    active: true
+    allowedFunctionsPerFile: 100
+    allowedFunctionsPerClass: 80
+    ignoreDeprecated: true
+    ignorePrivate: true
+    ignoreOverridden: true
+
+exceptions:
+  active: true
+  TooGenericExceptionCaught:
+    active: true
+    exceptionNames:
+      - 'ArrayIndexOutOfBoundsException'
+      - 'Error'
+      - 'Exception'
+      - 'IllegalMonitorStateException'
+      - 'IndexOutOfBoundsException'
+      - 'NullPointerException'
+      - 'RuntimeException'
+      - 'Throwable'
+    allowedExceptionNameRegex: '_|(ignore|expected).*'
+  SwallowedException:
+    active: true
+    ignoredExceptionTypes:
+      - 'InterruptedException'
+      - 'MalformedURLException'
+      - 'NumberFormatException'
+      - 'ParseException'
+
+naming:
+  active: true
+  ClassNaming:
+    active: true
+    classPattern: '[A-Z][a-zA-Z0-9]*'
+  FunctionNaming:
+    active: true
+    functionPattern: '[a-zA-Z][a-zA-Z0-9]*'
+  VariableNaming:
+    active: true
+    variablePattern: '[a-z][A-Za-z0-9]*'
+
+style:
+  active: true
+  MagicNumber:
+    active: false
+  MaxLineLength:
+    active: true
+    maxLineLength: 160
+  ReturnCount:
+    active: true
+    max: 6
+  UnusedParameter:
+    active: true

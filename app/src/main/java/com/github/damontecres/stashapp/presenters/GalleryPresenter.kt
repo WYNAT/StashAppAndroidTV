@@ -39,6 +39,8 @@ class GalleryPresenter(
 
     override fun imageMatchParent(item: GalleryData): Boolean = item.paths.cover.isBlank() || item.paths.cover.isDefaultUrl
 
+    override fun getPreloadUrl(item: GalleryData): String? = item.paths.cover.takeIf { it.isNotBlank() && !it.isDefaultUrl }
+
     companion object {
         private const val TAG = "GalleryPresenter"
 

@@ -133,13 +133,13 @@ class FrontPageParser(
                                     useRandom = false,
                                 )
                             FrontPageRow.Success(description, customFilter, data)
-                        } catch (ex: Exception) {
+                        } catch (@Suppress("TooGenericExceptionCaught") ex: Exception) {
                             Log.e(TAG, "Exception in addCustomFilterRow", ex)
                             FrontPageRow.Error
                         }
                     }
                 return@withContext job
-            } catch (ex: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") ex: Exception) {
                 Log.e(TAG, "Exception during addCustomFilterRow", ex)
                 CompletableDeferred(FrontPageRow.Error)
             }
@@ -245,7 +245,7 @@ class FrontPageParser(
                         Log.w(TAG, "SavedFilter does not exist")
                         FrontPageRow.Error
                     }
-                } catch (ex: Exception) {
+                } catch (@Suppress("TooGenericExceptionCaught") ex: Exception) {
                     Log.e(TAG, "Exception in addSavedFilterRow filterId=$filterId", ex)
                     FrontPageRow.Error
                 }

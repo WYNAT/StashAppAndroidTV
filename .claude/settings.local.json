@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Bash(grep -rn ParseStashStrings app/ build* --include=*.kt --include=*.kts --include=*.java)"
+    ]
+  }
+}

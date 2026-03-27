@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class DebugFragment : Fragment(R.layout.debug) {
+    @Suppress("LongMethod")
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
@@ -176,6 +177,7 @@ class DebugFragment : Fragment(R.layout.debug) {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun testSavedFilters() {
         val table = requireView().findViewById<TableLayout>(R.id.debug_test_table)
         table.removeAllViews()
@@ -248,6 +250,7 @@ class DebugFragment : Fragment(R.layout.debug) {
         }
     }
 
+    @Suppress("MagicNumber")
     private fun createRow(
         key: String,
         vararg values: String?,
@@ -300,6 +303,7 @@ class DebugFragment : Fragment(R.layout.debug) {
         return row
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun populateCodecsTable(codecsTable: TableLayout) {
         val androidCodecs = MediaCodecList(MediaCodecList.REGULAR_CODECS)
         val video = mutableListOf<TableRow>()

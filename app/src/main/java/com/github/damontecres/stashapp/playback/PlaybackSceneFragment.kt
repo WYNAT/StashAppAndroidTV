@@ -138,7 +138,8 @@ class PlaybackSceneFragment : PlaybackFragment() {
                     )
 
                     if (scene.interactive) {
-                        if (!funscriptUrl.isNullOrBlank()) {
+                        if (!funscriptUrl.isNullOrBlank() &&
+                            com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled) {
                             Toast.makeText(requireContext(), R.string.funscript_loading, Toast.LENGTH_SHORT).show()
                             
                             val isLocalIp = funscriptUrl.contains("//192.168.") || 
@@ -267,11 +268,12 @@ class PlaybackSceneFragment : PlaybackFragment() {
                                             com.github.damontecres.stashapp.util.HandyManager.play(exoPlayer.currentPosition)
                                         }
                                     } else {
-                                        updateHandyIcon()
                                         Toast.makeText(requireContext(), R.string.funscript_error, Toast.LENGTH_SHORT).show()
                                     }
                                 } finally {
                                     exoPlayer.playWhenReady = wasPlaying
+                                    // Re-sync icon with actual state (Handy may still be enabled)
+                                    updateHandyIcon()
                                 }
                             }
                         }

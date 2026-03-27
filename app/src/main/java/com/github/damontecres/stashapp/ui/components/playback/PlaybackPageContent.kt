@@ -345,7 +345,7 @@ class PlaybackViewModel : ViewModel() {
         }
     }
 
-    fun setupHandy(scene: FullSceneData, onDeactivated: (() -> Unit)? = null) {
+    fun setupHandy(scene: FullSceneData) {
         handyJob?.cancel()
         if (!com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled) return
 
@@ -376,10 +376,6 @@ class PlaybackViewModel : ViewModel() {
                             showToast(R.string.funscript_success, Toast.LENGTH_SHORT)
                             Log.i(TAG, "Handy setup successful")
                         } else {
-                            // Deactivate integration on all setup failures to prevent loops
-                            com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled = false
-                            onDeactivated?.invoke()
-
                             val errorMsg = result.toString()
                             viewModelScope.launch {
                                 withContext(Dispatchers.Main) {
@@ -425,10 +421,7 @@ class PlaybackViewModel : ViewModel() {
             }
             this@PlaybackViewModel.scene.value = scene
             if (scene != null) {
-                setupHandy(scene) {
-                    // Update state to trigger recomposition of player icons if needed
-                    // This callback allows updating local UI state from the ViewModel
-                }
+                setupHandy(scene)
             }
         }
     }

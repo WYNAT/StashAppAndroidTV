@@ -120,7 +120,7 @@ class StashApplication : Application() {
                             Version.fromString(currentVersion),
                             Version.fromString(pkgInfo.versionName!!),
                         ).run()
-                    } catch (ex: Exception) {
+                    } catch (@Suppress("TooGenericExceptionCaught") ex: Exception) {
                         Log.e(TAG, "Exception during app upgrade", ex)
                     }
                 }.start()

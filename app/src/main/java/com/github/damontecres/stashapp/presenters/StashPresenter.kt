@@ -125,6 +125,12 @@ abstract class StashPresenter<T>(
 
     open fun imageMatchParent(item: T): Boolean = true
 
+    /**
+     * Returns the primary image URL for [item] used for background preloading.
+     * Return null if no image should be preloaded.
+     */
+    open fun getPreloadUrl(item: T): String? = null
+
     abstract fun doOnBindViewHolder(
         cardView: StashImageCardView,
         item: T,

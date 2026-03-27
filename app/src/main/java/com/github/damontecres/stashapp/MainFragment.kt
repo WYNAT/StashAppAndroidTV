@@ -213,6 +213,7 @@ class MainFragment :
         adapters.forEach { it.clear() }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private suspend fun fetchData(server: StashServer) =
         withContext(Dispatchers.IO) {
             try {

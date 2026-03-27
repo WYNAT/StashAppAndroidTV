@@ -169,7 +169,7 @@ class ServerPreferences(
                         }
                     }
                 }
-            } catch (ex: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") ex: Exception) {
                 Log.w(TAG, "Error parsing custom locales", ex)
                 Restring.clear()
             }
@@ -186,9 +186,9 @@ class ServerPreferences(
                 try {
                     parseScan(config.configuration.defaults.scan, taskDefaults).invoke(this)
                     parseGenerate(config.configuration.defaults.generate, taskDefaults).invoke(this)
-                } catch (ex: Exception) {
-                    Log.e(TAG, "Exception during scan/generate parsing", ex)
-                }
+            } catch (@Suppress("TooGenericExceptionCaught") ex: Exception) {
+                Log.e(TAG, "Exception during scan/generate parsing", ex)
+            }
             }
             readUIConfig(ui)
         }
@@ -230,7 +230,7 @@ class ServerPreferences(
                     }
                 putString(PREF_RATING_TYPE, type)
                 putFloat(PREF_RATING_PRECISION, starPrecision)
-            } catch (ex: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") ex: Exception) {
                 Log.e(
                     TAG,
                     "Exception parsing ratingSystemOptions: $ratingSystemOptionsRaw",
@@ -263,7 +263,7 @@ class ServerPreferences(
                 if (filterMap != null) {
                     try {
                         filterParser.convertFilterMap(dataType, filterMap)
-                    } catch (ex: Exception) {
+                    } catch (@Suppress("TooGenericExceptionCaught") ex: Exception) {
                         Log.w(TAG, "default filter parse error for $dataType", ex)
                         FilterArgs(dataType)
                     }
@@ -280,7 +280,7 @@ class ServerPreferences(
                 if (filterMap != null) {
                     try {
                         filterParser.convertFilterMap(key.dataType, filterMap, false)
-                    } catch (ex: Exception) {
+                    } catch (@Suppress("TooGenericExceptionCaught") ex: Exception) {
                         Log.w(TAG, "default filter parse error for $key", ex)
                         FilterArgs(key.dataType)
                     }

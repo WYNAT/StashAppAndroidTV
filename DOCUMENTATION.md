@@ -1,9 +1,49 @@
 # StashAppAndroidTV - Technical Documentation
 
 ## Project Overview
-StashAppAndroidTV is a native Android TV client for the Stash server. The project is currently in a transition phase from a classic Leanback-based user interface to a modern Jetpack Compose interface.
+ StashAppAndroidTV is a native Android TV client for the Stash server. The project is currently in a transition phase from a classic Leanback-based user interface to a modern Jetpack Compose interface.
+ 
+ ---
+ 
+## Build Infrastructure
+
+The project uses the following build stack:
+
+*   **Gradle**: 9.3.0
+*   **Android Gradle Plugin (AGP)**: 9.0.0
+*   **Kotlin**: 2.3.0
+*   **compileSdk / targetSdk**: 36
+*   **Build file**: `app/build.gradle.kts` (Kotlin DSL)
+
+> **Note:** Migration to `android.builtInKotlin=true` (AGP 9.0 built-in Kotlin) is blocked by the `com.google.protobuf` plugin (v0.9.6), which is incompatible with the new AGP Extension API. The `org.jetbrains.kotlin.android` plugin remains in use until the protobuf plugin is updated.
+
+### Static Analysis
+*   **Detekt**: Upgraded to **2.0.0-alpha.2**. Configuration: `detekt.yml`.
+
+### String Generation
+*   Server-side UI strings are generated at build time from `stash-server/ui/v2.5/src/locales/en-GB.json` via the `generateStrings` Gradle task (`buildSrc/ParseStashStrings.kt`). Output: `app/build/generated/res/server/values/stash_strings.xml`.
 
 ---
+
+## Image Preloading (v0.8.16)
+
+To reduce the perception of blank cards while scrolling, background image preloading has been implemented for grid views.
+
+### How It Works
+*   Each `StashPresenter` subclass implements `getPreloadUrl(item): String?` to expose its primary image URL.
+*   `StashDataGridFragment.preloadImages(position)` is called on every position change and issues `StashGlide.withMemoryCaching().preload()` for the next **10 items** ahead of the current position.
+*   Preloaded images are stored in Glide's memory cache and are available immediately when a card is bound.
+
+### Supported Types
+Scenes, Performers, Studios, Tags, Groups, Galleries, Images, Markers.
+
+### Configuration
+The lookahead count is controlled by `IMAGE_PRELOAD_COUNT = 20` in `StashDataGridFragment`.
+
+---
+
+
+ ## UI Architecture & Path Separation (Detailed View)
 
 ## UI Architecture & Path Separation (Detailed View)
 
@@ -55,7 +95,7 @@ The Funscript feature allows synchronization of "The Handy" devices directly via
 
 ### Configuration
 *   **Enable/Disable Toggle:** Global switch in Settings (Old UI XML & Compose), and via a Gamepad icon in the Player UI.
-*   **Auto-Disable Logic:** The integration is automatically disabled globally if `setup()` fails (e.g., due to connection errors or invalid keys).
+*   **Persistent Logic:** The integration remains enabled even if `setup()` fails due to transient network or API errors. This allows retries without manual re-activation in Settings.
 *   **Connection Key:** The Handy key must be entered in the UI settings.
 *   **Handy Cloud Bridge:** Enables the use of Funscripts on local Stash servers via automatic hosting relay.
 *   **Sync:** Provides functions for testing the connection and adjusting the server time (offset correction).
@@ -99,4 +139,14 @@ The Funscript feature allows synchronization of "The Handy" devices directly via
 *   Expansion of Funscript support to other hardware protocols (HDSP/HAMP).
 *   Alignment of Handy latency compensation between both UI paths.
 
----
+ ---
+ 
+-
++## Changelog
++
++| Version | Typ | Beschreibung | Auswirkung (Impact) |
++| :--- | :--- | :--- | :--- |
++| **v0.8.16** | `Feature` | Build-Infrastruktur Upgrade (Gradle 9.3, AGP 9.0, JDK 25, Detekt 2.0) | High (Infrastructure) |
++| **v0.8.14** | `Fix` | Performance Optimierungen (Lazy DB, Startup Speed) | Medium |
++
++---

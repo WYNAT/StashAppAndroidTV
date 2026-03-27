@@ -191,6 +191,7 @@ class FilterFragment :
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private suspend fun populateSavedFilters(dataType: DataType) {
         val server = StashServer.requireCurrentServer()
         val savedFilters =

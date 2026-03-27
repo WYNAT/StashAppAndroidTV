@@ -12,18 +12,27 @@ import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 object HandyManager {
     private const val TAG = "HandyManager"
     private const val BASE_URL = "https://www.handyfeeling.com/api/handy/v2"
-    
+
+    private const val TIMEOUT_SECONDS = 30L
+    private const val HSSP_MODE = 1
+    private const val HDSP_MODE = 2
+    private const val TEST_POSITION_MIN = 0
+    private const val TEST_POSITION_MAX = 100
+    private const val TEST_DURATION_ZERO = 0L
+    private const val TEST_DURATION_THREE_SECONDS = 3000L
+    private const val TEST_DELAY_ONE_SECOND = 1000L
+    private const val ERROR_CODE_UNSUPPORTED_PROTOCOL = 4003
+
     private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+        .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+        .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .build()
 
     private val JSON = "application/json; charset=utf-8".toMediaType()
@@ -81,7 +90,7 @@ object HandyManager {
                         Log.i(TAG, "Handy server time offset calculated: $serverTimeOffset ms")
                     }
                 }
-            } catch (e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 Log.e(TAG, "Failed to sync server time", e)
             }
         }
@@ -131,13 +140,13 @@ object HandyManager {
                                 }
                             }
                         }
-                    } catch (e: Exception) {
+                    } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                         Log.e(TAG, "Failed to parse error response", e)
                     }
                     Pair(false, errorMsg)
                 }
             }
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Pair(false, e.message ?: "Network error")
         }
     }
@@ -163,7 +172,7 @@ object HandyManager {
                     Pair(0L, 0L)
                 }
             }
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Pair(0L, 0L)
         }
     }
@@ -171,14 +180,14 @@ object HandyManager {
     private suspend fun parseHandyResponse(response: okhttp3.Response): HandyResult {
         val body = response.body?.string() ?: ""
         if (response.isSuccessful) {
-            val jsonResponse = try { JSONObject(body) } catch (e: Exception) { null }
+            val jsonResponse = try { JSONObject(body) } catch (@Suppress("TooGenericExceptionCaught") e: Exception) { null }
             if (jsonResponse != null && jsonResponse.has("error")) {
                 val error = jsonResponse.getJSONObject("error")
                 return HandyResult.ApiError(error.optInt("code", response.code), error.optString("message", "Unknown error"))
             }
             return HandyResult.Success
         } else {
-            val jsonResponse = try { JSONObject(body) } catch (e: Exception) { null }
+            val jsonResponse = try { JSONObject(body) } catch (@Suppress("TooGenericExceptionCaught") e: Exception) { null }
             if (jsonResponse != null && jsonResponse.has("error")) {
                 val error = jsonResponse.getJSONObject("error")
                 return HandyResult.ApiError(error.optInt("code", response.code), error.optString("message", "Unknown API error ($body)"))
@@ -200,7 +209,7 @@ object HandyManager {
                 Log.i(TAG, "Handy setMode($mode) response: ${response.code}")
                 parseHandyResponse(response)
             }
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Log.e(TAG, "Handy setMode failed", e)
             HandyResult.NetworkError(e.message ?: "Network error")
         }
@@ -214,15 +223,13 @@ object HandyManager {
 
         if (connectionKey.isBlank()) {
             Log.e(TAG, "Handy setup failed: Connection key is blank")
-            isHandyEnabled = false
-            return@withContext HandyResult.GenericError("Connection key is blank")
+            return@withContext HandyResult.GenericError("Connection key is blank. Please set it in Settings.")
         }
         
         var normalizedUrl = url.trim()
         if (!normalizedUrl.startsWith("http://", ignoreCase = true) && !normalizedUrl.startsWith("https://", ignoreCase = true)) {
             Log.e(TAG, "Handy setup failed: Unsupported URL protocol - $normalizedUrl")
-            isHandyEnabled = false
-            return@withContext HandyResult.ApiError(4003, "Unsupported URL protocol. Only http/https supported.")
+            return@withContext HandyResult.ApiError(ERROR_CODE_UNSUPPORTED_PROTOCOL, "Unsupported URL protocol. Only http/https supported.")
         }
 
         // Check if we need to bridge local IP
@@ -245,11 +252,10 @@ object HandyManager {
 
         try {
             Log.i(TAG, "Handy setup started for URL: $normalizedUrl")
-            // Ensure we are in HSSP mode (1) before setup
-            val modeResult = setMode(1)
+            // Ensure we are in HSSP mode (HSSP_MODE) before setup
+            val modeResult = setMode(HSSP_MODE)
             if (modeResult !is HandyResult.Success) {
                 Log.e(TAG, "Handy setup failed: Could not set HSSP mode - $modeResult")
-                isHandyEnabled = false
                 return@withContext modeResult
             }
 
@@ -265,14 +271,12 @@ object HandyManager {
                 val result = parseHandyResponse(response)
                 Log.i(TAG, "Handy setup result: $result")
                 if (result !is HandyResult.Success) {
-                    Log.w(TAG, "Handy setup failed by API. Disabling Handy Integration.")
-                    isHandyEnabled = false
+                    Log.w(TAG, "Handy setup failed by API: $result")
                 }
                 result
             }
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Log.e(TAG, "Handy setup exception", e)
-            isHandyEnabled = false
             HandyResult.NetworkError(e.message ?: "Network error")
         }
     }
@@ -316,7 +320,7 @@ object HandyManager {
                 Log.e(TAG, "Hosting upload failed: ${response.code}")
                 null
             }
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Log.e(TAG, "Error in Cloud Bridge upload", e)
             null
         }
@@ -326,15 +330,15 @@ object HandyManager {
         if (connectionKey.isBlank()) return@withContext HandyResult.GenericError("Connection key is empty")
         try {
             Log.i(TAG, "Handy hardware test started")
-            // 1. Set mode to HDSP (2)
-            val modeResult = setMode(2)
+            // 1. Set mode to HDSP (HDSP_MODE)
+            val modeResult = setMode(HDSP_MODE)
             if (modeResult !is HandyResult.Success) return@withContext modeResult
             
             // 2. Move to 0 immediately
             Log.i(TAG, "Moving to 0")
             val json0 = JSONObject().apply { 
-                put("position", 0)
-                put("duration", 0)
+                put("position", TEST_POSITION_MIN)
+                put("duration", TEST_DURATION_ZERO)
             }
             val request0 = Request.Builder()
                 .url("$BASE_URL/hdsp/xpt")
@@ -347,13 +351,13 @@ object HandyManager {
             }
             
             // 3. Wait 1 second
-            kotlinx.coroutines.delay(1000)
+            kotlinx.coroutines.delay(TEST_DELAY_ONE_SECOND)
             
             // 4. Move to 100 in 3 seconds
-            Log.i(TAG, "Moving to 100 in 3000ms")
+            Log.i(TAG, "Moving to 100 in ${TEST_DURATION_THREE_SECONDS}ms")
             val json100 = JSONObject().apply { 
-                put("position", 100)
-                put("duration", 3000)
+                put("position", TEST_POSITION_MAX)
+                put("duration", TEST_DURATION_THREE_SECONDS)
             }
             val request100 = Request.Builder()
                 .url("$BASE_URL/hdsp/xpt")
@@ -367,7 +371,7 @@ object HandyManager {
             
             Log.i(TAG, "Handy hardware test finished")
             HandyResult.Success
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Log.e(TAG, "Handy hardware test exception", e)
             HandyResult.NetworkError(e.message ?: "Network error")
         }
@@ -389,7 +393,7 @@ object HandyManager {
                 client.newCall(request).execute().use { response ->
                     Log.i(TAG, "Handy play response: ${response.code}")
                 }
-            } catch (e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 Log.e(TAG, "Handy play failed", e)
             }
         }
@@ -407,7 +411,7 @@ object HandyManager {
                 client.newCall(request).execute().use { response ->
                     Log.i(TAG, "Handy stop response: ${response.code}")
                 }
-            } catch (e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 Log.e(TAG, "Handy stop failed", e)
             }
         }

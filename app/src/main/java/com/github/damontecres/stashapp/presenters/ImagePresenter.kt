@@ -46,6 +46,8 @@ class ImagePresenter(
         cardView.setRating100(item.rating100)
     }
 
+    override fun getPreloadUrl(item: ImageData): String? = item.paths.thumbnail ?: item.paths.image
+
     override fun imageMatchParent(item: ImageData): Boolean =
         item.paths.thumbnail?.contains("default=true") == true ||
             item.paths.image?.contains("default=true") == true ||

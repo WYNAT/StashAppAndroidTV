@@ -42,6 +42,8 @@ import com.github.damontecres.stashapp.navigation.FilterAndPosition
 import com.github.damontecres.stashapp.navigation.NavigationOnItemViewClickedListener
 import com.github.damontecres.stashapp.presenters.ScenePresenter
 import com.github.damontecres.stashapp.presenters.StashImageCardView
+import com.github.damontecres.stashapp.presenters.StashPresenter
+import com.github.damontecres.stashapp.util.StashGlide
 import com.github.damontecres.stashapp.suppliers.DataSupplierFactory
 import com.github.damontecres.stashapp.suppliers.FilterArgs
 import com.github.damontecres.stashapp.util.AlphabetSearchUtils
@@ -173,6 +175,22 @@ class StashDataGridFragment :
             // If on the second row & the back callback exists, enable it
             onBackPressedCallback?.isEnabled = selectedPosition >= numberOfColumns
             pagingAdapter?.maybePrefetch(position)
+            preloadImages(position)
+        }
+    }
+
+    private fun preloadImages(position: Int) {
+        val adapter = pagingAdapter ?: return
+        val context = context ?: return
+        val end = minOf(position + IMAGE_PRELOAD_COUNT, adapter.size())
+        for (i in (position + 1) until end) {
+            val item = adapter.get(i) ?: continue
+            val presenter = adapter.getPresenter(item)
+            if (presenter is StashPresenter<*>) {
+                @Suppress("UNCHECKED_CAST")
+                val url = (presenter as StashPresenter<Any>).getPreloadUrl(item) ?: continue
+                StashGlide.withMemoryCaching(context, url).preload()
+            }
         }
     }
 
@@ -649,6 +667,9 @@ class StashDataGridFragment :
         private const val TAG = "StashDataGridFragment"
 
         private const val DEBUG = false
+
+        // Number of items ahead to preload images for
+        private const val IMAGE_PRELOAD_COUNT = 20
     }
 
     inner class VerticalGridItemBridgeAdapter : ItemBridgeAdapter() {

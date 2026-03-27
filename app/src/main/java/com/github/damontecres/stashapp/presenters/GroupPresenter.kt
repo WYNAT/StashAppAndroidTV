@@ -65,6 +65,8 @@ class GroupPresenter(
         cardView.setRating100(item.rating100)
     }
 
+    override fun getPreloadUrl(item: GroupData): String? = item.front_image_path
+
     companion object {
         private const val TAG = "GroupPresenter"
 

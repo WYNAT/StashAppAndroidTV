@@ -4,11 +4,15 @@ All significant changes to the Stash App Android TV project are documented in th
 
 | Version | Type | Description | Impact |
 | :--- | :--- | :--- | :--- |
+| **v0.8.16** | `Fix` / `Improvement` | Fixed inconsistent card sizes in home slider: info area now has a fixed height (88dp) and icon row visibility is controlled dynamically. Added background image preloading for the next 10 items while scrolling in grid views (Scenes, Performers, Studios, Tags, Groups, Galleries, Images, Markers). | Medium |
+| **v0.8.15** | `Fix` | Fixed Handy/Funscript loading: Removed auto-disable logic from setup path which was permanently disabling the integration in SharedPreferences on transient API/network errors. Fixed Game symbol toggle reliability. | Low |
 | **v0.8.14** | `Feature` | Optimized startup performance: implemented stale-while-revalidate for server connection, lazy database initialization, and asynchronous app upgrade handling to significantly reduce startup time on slow devices. | Medium |
 | **v0.8.13** | `Fix` | Fixed Handy auto-disable persistence by ensuring the integration is deactivated on all failure paths (timeouts/mode-errors) and adding a guard to skip loading if disabled. | Low |
 | **v0.8.12** | `Fix` | Fixed Dark Mode visibility in the Handy error dialog by ensuring theme-aware text colors (onSurface/error) on dark backgrounds. | Low |
 | **v0.8.11** | `Fix` | ACHIEVED ZERO-WARNING BUILD. Systematically resolved 200+ compiler warnings (unchecked casts, deprecated Focus/SDK_INT APIs, Resolution enums, and redundant null-checks). | Low |
-| **v0.8.10** | `Feature` | Finalized The Handy integration: Global Enable/Disable toggle (auto-disable on error) and Gamepad Player UI quick toggle for immediate script loading in both UIs. | Low |
+| **v0.8.10** | `Feature` | Finalized The Handy integration: Global*   **Enable/Disable Toggle:** Global switch in Settings (Old UI XML & Compose), and via a Gamepad icon in the Player UI.
+*   **Persistent Logic:** The integration remains enabled even if `setup()` fails due to transient network or API errors. This allows retries without manual re-activation in Settings.
+*   **Connection Key:** The Handy key must be entered in the UI settings. (both Old & New UI) and detailed error reporting for Handy (Toasts include HTTP/API error details). | Low |
 | **v0.8.9** | `Feature` | Added Hardware Test Slider in Settings (both Old & New UI) and detailed error reporting for Handy (Toasts include HTTP/API error details). | Low |
 | **v0.8.8** | `Documentation` | Comprehensive documentation update: README.md (Funscript fork), AGENTS.MD (Testing/Coding standards), and translated all comments/docs to English. | Low |
 | **v0.8.4** | `Feature` | Added Interactive gamepad icons to Scene Cards and 15s loading Timeout-Toast for Funscripts on Video Start (Playback). | Low |

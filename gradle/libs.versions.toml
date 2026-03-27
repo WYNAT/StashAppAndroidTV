@@ -2,7 +2,8 @@
 acra = "5.13.1"
 activity-compose = "1.12.2"
 androidsvg-aar = "1.4"
-android-application = "8.13.2"
+android-application = "9.0.0"
+detekt = "2.0.0-alpha.2"
 apollo = "4.4.0"
 androidx-media3 = "1.9.0"
 androidx-test = "1.7.0"
@@ -148,3 +149,4 @@ kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization"
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobuf" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
