@@ -185,9 +185,6 @@ class RootActivity :
 
     override fun onPause() {
         Log.v(TAG, "onPause")
-        if (appHasPin()) {
-            navigationManager.navigate(Destination.Pin)
-        }
         super.onPause()
     }
 

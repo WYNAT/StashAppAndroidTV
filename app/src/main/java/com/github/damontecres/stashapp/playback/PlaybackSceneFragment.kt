@@ -21,6 +21,8 @@ import kotlinx.coroutines.withContext
 import com.github.damontecres.stashapp.R
 import com.github.damontecres.stashapp.StashApplication
 import com.github.damontecres.stashapp.StashExoPlayer
+import com.github.damontecres.stashapp.ui.components.prefs.StashPreference
+import com.github.damontecres.stashapp.util.preferences
 import com.github.damontecres.stashapp.data.DataType
 import com.github.damontecres.stashapp.navigation.Destination
 import com.github.damontecres.stashapp.util.Constants
@@ -234,6 +236,7 @@ class PlaybackSceneFragment : PlaybackFragment() {
             val scene = viewModel.scene.value
             if (scene?.interactive == true) {
                 handyToggleButton.visibility = View.VISIBLE
+                com.github.damontecres.stashapp.util.HandyManager.initialize(requireContext())
                 val updateHandyIcon = {
                     if (com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled) {
                         handyToggleButton.setColorFilter(android.graphics.Color.WHITE)
@@ -245,9 +248,15 @@ class PlaybackSceneFragment : PlaybackFragment() {
                 }
                 updateHandyIcon()
                 handyToggleButton.setOnClickListener {
+                    com.github.damontecres.stashapp.util.HandyManager.initialize(requireContext())
                     val enabled = !com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled
                     com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled = enabled
                     updateHandyIcon()
+                    lifecycleScope.launch {
+                        requireContext().preferences.updateData { prefs ->
+                            StashPreference.HandyEnabled.setter(prefs, enabled)
+                        }
+                    }
                     if (enabled) {
                         // Attempt to reconnect if enabled inline
                         Toast.makeText(requireContext(), R.string.funscript_loading, Toast.LENGTH_SHORT).show()
@@ -259,7 +268,6 @@ class PlaybackSceneFragment : PlaybackFragment() {
                                 try {
                                     exoPlayer.playWhenReady = false
                                     val result = withTimeoutOrNull(30000L) {
-                                        com.github.damontecres.stashapp.util.HandyManager.initialize(requireContext())
                                         com.github.damontecres.stashapp.util.HandyManager.setup(funscriptUrl)
                                     }
                                     if (result is com.github.damontecres.stashapp.util.HandyManager.HandyResult.Success) {
