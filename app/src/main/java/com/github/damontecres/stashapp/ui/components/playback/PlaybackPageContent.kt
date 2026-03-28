@@ -130,6 +130,7 @@ import com.github.damontecres.stashapp.util.StashClient
 import com.github.damontecres.stashapp.util.StashCoroutineExceptionHandler
 import com.github.damontecres.stashapp.util.StashServer
 import com.github.damontecres.stashapp.util.findActivity
+import com.github.damontecres.stashapp.util.preferences
 import com.github.damontecres.stashapp.util.isNotNullOrBlank
 import com.github.damontecres.stashapp.util.launchIO
 import com.github.damontecres.stashapp.util.showSetRatingToast
@@ -347,6 +348,7 @@ class PlaybackViewModel : ViewModel() {
 
     fun setupHandy(scene: FullSceneData) {
         handyJob?.cancel()
+        com.github.damontecres.stashapp.util.HandyManager.initialize(StashApplication.getApplication())
         if (!com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled) return
 
         if (scene.interactive) {
@@ -1036,9 +1038,15 @@ fun PlaybackPageContent(
                             }
 
                             PlaybackAction.ToggleHandy -> {
+                                com.github.damontecres.stashapp.util.HandyManager.initialize(context)
                                 val enabled = !com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled
                                 com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled = enabled
                                 isHandyEnabled = enabled
+                                scope.launch {
+                                    context.preferences.updateData { prefs ->
+                                        com.github.damontecres.stashapp.ui.components.prefs.StashPreference.HandyEnabled.setter(prefs, enabled)
+                                    }
+                                }
                                 if (enabled) {
                                     viewModel.scene.value?.let { s -> viewModel.setupHandy(s) }
                                 } else {
