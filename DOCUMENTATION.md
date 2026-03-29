@@ -147,23 +147,4 @@ The Funscript feature allows synchronization of "The Handy" devices directly via
 *   Expansion of Funscript support to other hardware protocols (HDSP/HAMP).
 *   Alignment of Handy latency compensation between both UI paths.
 
- ---
- 
--
-+## Changelog
-
-| Version | Typ | Beschreibung | Auswirkung (Impact) |
-| :--- | :--- | :--- | :--- |
-| **v0.8.26** | `Feature` | Video-Wiederholung (Loop): Neuer Button im Querformat & Menü-Option im Hochformat | Medium |
-| **v0.8.25** | `Fix` | Player Overlay: Erhöhung der Basishöhe (256dp) & Korrektur Marker-Bar Layout zur Vermeidung von Titel-Clipping | Medium (UI/UX) |
-| **v0.8.24** | `Fix` | Mobile Player: Korrektur Orientierungs-Logik (Querformat zeigt alle Buttons, Hochformat nutzt kompaktes Menü) | Medium (UI/UX) |
-| **v0.8.23** | `Fix` | Bereinigung von Build-Warnungen & API-Deprecations (VR_HD, ColorScheme, TvUtils) | Medium |
-| **v0.8.22** | `Fix` | Mobile Player: Menü-Fix Landscape (CC, Handy, Settings) & responsive Button-Größe (48dp) | Medium (UI/UX) |
-| **v0.8.21** | `Feature` | Mobile Player-Menü Optimierung (Priorisierung Seek-Buttons, Verschiebung Skip-Buttons ins Menü) | Medium (UI/UX) |
-| **v0.8.20** | `Fix` | Kachellayouts: Korrektur für "View All" Karte und CJK Schriftarten (Japanische Zeichen) | Low |
-| **v0.8.19** | `Fix` | Layout-Fixes für Home-Row (Kachelgrößen Standardisierung, Überlappung Rating) | Medium |
-| **v0.8.18** | `Feature` | Responsive Kachellayouts für Mobile & Tablet (dynamisches Grid, aspectRatio) in Compose & Leanback UI | High (UI/UX) |
-| **v0.8.16** | `Feature` | Build-Infrastruktur Upgrade (Gradle 9.3, AGP 9.0, JDK 25, Detekt 2.0) | High (Infrastructure) |
-| **v0.8.14** | `Fix` | Performance Optimierungen (Lazy DB, Startup Speed) | Medium |
-
 ---

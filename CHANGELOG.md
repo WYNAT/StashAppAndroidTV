@@ -4,6 +4,9 @@ All significant changes to the Stash App Android TV project are documented in th
 
 | Version | Type | Description | Impact |
 | :--- | :--- | :--- | :--- |
+| **v0.8.26** | `Feature` | Video-Wiederholung (Loop): Neuer Button im Querformat & Menü-Option im Hochformat für nahtlose Wiedergabe. | Medium |
+| **v0.8.25** | `Fix` | Player Overlay: Erhöhung der Basishöhe (256dp) & Korrektur Marker-Bar Layout zur Vermeidung von Titel-Clipping und Reduzierung von unerwünschtem Scrollen. | Medium |
+| **v0.8.24** | `Fix` | Mobile Player: Korrektur der Orientierungs-Logik. Im Querformat werden alle Steuerungen direkt angezeigt, im Hochformat werden sekundäre Buttons in das "Mehr"-Menü verschoben. | Medium |
 | **v0.8.17** | `Improvement` | Beschleunigung der Ladezeit beim ersten Öffnen durch Auslagerung von synchronen SharedPreferences-Aufrufen (Commit zu Apply) und Verschiebung des App-Upgrade-Checks in einen Hintergrund-Thread. | Low |
 | **v0.8.16** | `Fix` / `Improvement` | Fixed inconsistent card sizes in home slider: info area now has a fixed height (88dp) and icon row visibility is controlled dynamically. Added background image preloading for the next 10 items while scrolling in grid views (Scenes, Performers, Studios, Tags, Groups, Galleries, Images, Markers). | Medium |
 | **v0.8.15** | `Fix` | Fixed Handy/Funscript loading: Removed auto-disable logic from setup path which was permanently disabling the integration in SharedPreferences on transient API/network errors. Fixed Game symbol toggle reliability. | Low |
@@ -19,6 +22,13 @@ All significant changes to the Stash App Android TV project are documented in th
 | **v0.8.4** | `Feature` | Added Interactive gamepad icons to Scene Cards and 15s loading Timeout-Toast for Funscripts on Video Start (Playback). | Low |
 | **v0.8.3** | `Fix` / `Feature` | Extended error information for The Handy API connection test in both UIs (Compose & XML). Added missing Handy settings to the old UI. | Low |
 | **v0.8.2** | `Feature` | Direct The Handy API (Funscripts) integration into ExoPlayer. Introduced HandyManager for REST communication. | Low |
+
+### Design & Structure Documentation (v0.8.26)
+
+- **Feature:** Video Repeat (Loop) Toggle.
+- **Pattern:** Integration via `ExoPlayer.setRepeatMode`. Der Zustand wird über die `PlaybackAction.ToggleRepeat` an das `PlaybackPageContent` signalisiert und über einen reaktiven `isLooping` State an das UI (Overlay/Controls) weitergereicht.
+- **UI-Parity:** Implementierung sowohl als direkter Button (Landscape) als auch als dynamischer Menüeintrag im Bottom-Dialog (Portrait) zur Wahrung der Konsistenz auf unterschiedlichen Bildschirmgrößen.
+- **Refactoring:** Erhöhung der `PlaybackOverlay` Basishöhe und Entkopplung der `SceneMarkerBar` Höhe, um Layout-Stabilität bei variabler Button-Anzahl zu gewährleisten.
 
 ### Design & Structure Documentation (v0.8.5)
 
