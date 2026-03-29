@@ -36,13 +36,7 @@ class MultiCriterionFragment(
         actions: MutableList<GuidedAction>,
         savedInstanceState: Bundle?,
     ) {
-        val modifiers =
-            filterOption.allowedModifiers ?: listOf(
-                CriterionModifier.INCLUDES_ALL,
-                CriterionModifier.INCLUDES,
-                CriterionModifier.IS_NULL,
-                CriterionModifier.NOT_NULL,
-            )
+        val modifiers = filterOption.allowedModifiers
 
         curVal =
             filterOption.getter

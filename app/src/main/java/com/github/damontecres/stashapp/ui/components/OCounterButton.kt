@@ -88,6 +88,7 @@ fun PlaybackOCountButton(
     onControllerInteraction: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    buttonSize: androidx.compose.ui.unit.Dp = 56.dp,
 ) {
     OCounterButtonWrapper(
         sfwMode = sfwMode,
@@ -100,6 +101,7 @@ fun PlaybackOCountButton(
                 onClick = newOnClick,
                 enabled = enabled,
                 onControllerInteraction = onControllerInteraction,
+                buttonSize = buttonSize,
             )
         } else {
             PlaybackButton(
@@ -107,6 +109,7 @@ fun PlaybackOCountButton(
                 onClick = newOnClick,
                 enabled = enabled,
                 onControllerInteraction = onControllerInteraction,
+                buttonSize = buttonSize,
             )
         }
     }

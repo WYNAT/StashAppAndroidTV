@@ -166,7 +166,7 @@ fun ResolutionCriterionInput.toMap(): Map<String, Any> =
                 ResolutionEnum.STANDARD_HD -> "720p"
                 ResolutionEnum.FULL_HD -> "1080p"
                 ResolutionEnum.QUAD_HD -> "1440p"
-                ResolutionEnum.VR_HD -> "4k"
+                ResolutionEnum.VR_HD,
                 ResolutionEnum.FOUR_K -> "4k"
                 ResolutionEnum.FIVE_K -> "5k"
                 ResolutionEnum.SIX_K -> "6k"

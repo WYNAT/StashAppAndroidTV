@@ -89,31 +89,30 @@ class StashApplication : Application() {
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(LifecycleObserverImpl())
 
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val currentVersion = prefs.getString(VERSION_NAME_CURRENT_KEY, null)
-        val currentVersionCode = prefs.getLong(VERSION_CODE_CURRENT_KEY, -1)
+        Thread {
+            val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+            val currentVersion = prefs.getString(VERSION_NAME_CURRENT_KEY, null)
+            val currentVersionCode = prefs.getLong(VERSION_CODE_CURRENT_KEY, -1)
 
-        val newVersionCode =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                pkgInfo.longVersionCode
-            } else {
-                @Suppress("DEPRECATION")
-                pkgInfo.versionCode.toLong()
-            }
-        if (pkgInfo.versionName != currentVersion || newVersionCode != currentVersionCode) {
-            Log.i(
-                TAG,
-                "App installed: $currentVersion=>${pkgInfo.versionName} ($currentVersionCode=>$newVersionCode",
-            )
-            prefs.edit(true) {
-                putString(VERSION_NAME_PREVIOUS_KEY, currentVersion)
-                putLong(VERSION_CODE_PREVIOUS_KEY, currentVersionCode)
-                putString(VERSION_NAME_CURRENT_KEY, pkgInfo.versionName)
-                putLong(VERSION_CODE_CURRENT_KEY, newVersionCode)
-            }
-            if (currentVersion != null) {
-                // Run upgrade handler in a background thread to avoid blocking startup
-                Thread {
+            val newVersionCode =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    pkgInfo.longVersionCode
+                } else {
+                    @Suppress("DEPRECATION")
+                    pkgInfo.versionCode.toLong()
+                }
+            if (pkgInfo.versionName != currentVersion || newVersionCode != currentVersionCode) {
+                Log.i(
+                    TAG,
+                    "App installed: $currentVersion=>${pkgInfo.versionName} ($currentVersionCode=>$newVersionCode",
+                )
+                prefs.edit {
+                    putString(VERSION_NAME_PREVIOUS_KEY, currentVersion)
+                    putLong(VERSION_CODE_PREVIOUS_KEY, currentVersionCode)
+                    putString(VERSION_NAME_CURRENT_KEY, pkgInfo.versionName)
+                    putLong(VERSION_CODE_CURRENT_KEY, newVersionCode)
+                }
+                if (currentVersion != null) {
                     try {
                         AppUpgradeHandler(
                             this@StashApplication,
@@ -123,9 +122,9 @@ class StashApplication : Application() {
                     } catch (@Suppress("TooGenericExceptionCaught") ex: Exception) {
                         Log.e(TAG, "Exception during app upgrade", ex)
                     }
-                }.start()
+                }
             }
-        }
+        }.start()
     }
 
     override fun getResources(): Resources = Restring.wrapResources(applicationContext, super.getResources())

@@ -46,7 +46,9 @@ class StudioPresenter(
 
         cardView.setUpExtraRow(dataTypeMap, null)
 
-        cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT, 8)
+        val w = com.github.damontecres.stashapp.util.getDynamicCardWidth(cardView.context, DataType.STUDIO)
+        val h = com.github.damontecres.stashapp.util.getDynamicCardHeight(cardView.context, DataType.STUDIO)
+        cardView.setMainImageDimensions(w, h, 8)
         cardView.setMainImageScaleType(ImageView.ScaleType.FIT_CENTER)
         loadImage(cardView, item.image_path, defaultDrawable = R.drawable.default_studio)
 

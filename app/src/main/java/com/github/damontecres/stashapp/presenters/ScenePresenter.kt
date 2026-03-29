@@ -39,7 +39,9 @@ class ScenePresenter(
 
         cardView.setUpExtraRow(dataTypeMap, item.o_counter, item.interactive)
 
-        cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT)
+        val w = com.github.damontecres.stashapp.util.getDynamicCardWidth(cardView.context, DataType.SCENE)
+        val h = com.github.damontecres.stashapp.util.getDynamicCardHeight(cardView.context, DataType.SCENE)
+        cardView.setMainImageDimensions(w, h)
 
         val videoFile = item.files.firstOrNull()?.videoFile
         if (videoFile != null) {

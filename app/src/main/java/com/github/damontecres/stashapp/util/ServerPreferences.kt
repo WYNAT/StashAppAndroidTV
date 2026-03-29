@@ -196,7 +196,7 @@ class ServerPreferences(
 
     private fun readUIConfig(ui: Map<*, *>) {
         uiConfiguration = ui
-        preferences.edit(true) {
+        preferences.edit {
             ui.getCaseInsensitive(PREF_TRACK_ACTIVITY).also {
                 if (it != null) {
                     // Use a non-null value from server

@@ -36,11 +36,7 @@ class HierarchicalMultiCriterionFragment(
         actions: MutableList<GuidedAction>,
         savedInstanceState: Bundle?,
     ) {
-        val modifiers =
-            filterOption.allowedModifiers ?: listOf(
-                CriterionModifier.INCLUDES_ALL,
-                CriterionModifier.INCLUDES,
-            )
+        val modifiers = filterOption.allowedModifiers
 
         curVal = filterOption.getter
             .invoke(

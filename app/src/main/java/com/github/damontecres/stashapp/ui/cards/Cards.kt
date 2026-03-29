@@ -16,9 +16,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.runtime.Composable
@@ -104,6 +106,7 @@ import com.github.damontecres.stashapp.util.asSlimeSceneData
 import com.github.damontecres.stashapp.util.isNotNullOrBlank
 import com.github.damontecres.stashapp.views.getRatingAsDecimalString
 import kotlinx.coroutines.delay
+import com.github.damontecres.stashapp.util.defaultCardWidth
 import java.util.EnumMap
 
 @Composable
@@ -234,8 +237,7 @@ fun RootCard(
     onClick: () -> Unit,
     title: AnnotatedString,
     uiConfig: ComposeUiConfig,
-    imageWidth: Dp,
-    imageHeight: Dp,
+    aspectRatio: Float,
     longClicker: LongClicker<Any>,
     getFilterAndPosition: ((item: Any) -> FilterAndPosition)?,
     modifier: Modifier = Modifier,
@@ -287,12 +289,6 @@ fun RootCard(
         focusedAfterDelay = false
     }
 
-    val height =
-        (imageHeight * (1 + (5f - uiConfig.cardSettings.columns) / uiConfig.cardSettings.columns))
-            .coerceAtMost(224.dp) // Prevent tall cards from being excessively tall
-    val width =
-        imageWidth * (1 + (5f - uiConfig.cardSettings.columns) / uiConfig.cardSettings.columns)
-
     Card(
         onClick = {
             if (uiConfig.playSoundOnFocus) playOnClickSound(context)
@@ -310,7 +306,7 @@ fun RootCard(
         modifier =
             modifier
                 .padding(0.dp)
-                .width(width),
+                .fillMaxWidth(),
         interactionSource = interactionSource,
         shape = shape,
         colors = colors,
@@ -322,8 +318,7 @@ fun RootCard(
         Box(
             modifier =
                 Modifier
-                    .height(height)
-//                    .fillMaxHeight(.7f)
+                    .aspectRatio(aspectRatio)
                     .fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
@@ -363,7 +358,6 @@ fun RootCard(
                 )
                 if (!focusedAfterDelay || presentationState.coverSurface) {
                     CardImage(
-                        imageHeight = height,
                         imageUrl = imageUrl,
                         defaultImageDrawableRes = defaultImageDrawableRes,
                         imageContent =
@@ -402,7 +396,6 @@ fun RootCard(
                     }
                 }
                 CardImage(
-                    imageHeight = height,
                     imageUrl = extraImageUrl,
                     defaultImageDrawableRes = defaultImageDrawableRes,
                     imageContent = imageContent,
@@ -414,6 +407,7 @@ fun RootCard(
                 visible = !focusedAfterDelay,
                 enter = fadeIn(),
                 exit = fadeOut(),
+                modifier = Modifier.matchParentSize(),
             ) {
                 imageOverlay.invoke(this)
             }
@@ -427,6 +421,7 @@ fun RootCard(
                     maxLines = 1,
                     modifier =
                         Modifier
+                            .heightIn(max = 24.dp)
                             .enableMarquee(focusedAfterDelay),
                 )
             }
@@ -436,7 +431,7 @@ fun RootCard(
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                 ),
             ) {
-                Box(Modifier.graphicsLayer { alpha = 0.6f }) { subtitle.invoke(focusedAfterDelay) }
+                Box(Modifier.graphicsLayer { alpha = 0.6f }.heightIn(max = 16.dp)) { subtitle.invoke(focusedAfterDelay) }
             }
             // Description
             ProvideTextStyle(
@@ -447,7 +442,7 @@ fun RootCard(
                     Modifier
                         .graphicsLayer {
                             alpha = 0.8f
-                        }.fillMaxWidth(),
+                        }.fillMaxWidth().heightIn(max = 16.dp),
                 ) { description.invoke(this, focusedAfterDelay) }
             }
         }
@@ -456,7 +451,6 @@ fun RootCard(
 
 @Composable
 fun CardImage(
-    imageHeight: Dp,
     imageUrl: String?,
     @DrawableRes defaultImageDrawableRes: Int?,
     imageContent: @Composable (BoxScope.() -> Unit)?,
@@ -466,9 +460,7 @@ fun CardImage(
     Box(
         modifier =
             modifier
-                .height(imageHeight)
-//                .fillMaxHeight()
-                .fillMaxWidth(),
+                .fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         if (imageUrl.isDefaultUrl && defaultImageDrawableRes != null) {
@@ -494,6 +486,26 @@ fun CardImage(
     }
 }
 
+fun getDynamicCardWidthDp(item: Any?, columns: Int): Float {
+    val zoomRatio = 5f / columns
+    val defaultWidth = when (item) {
+        is SlimSceneData? -> DataType.SCENE.defaultCardWidth
+        is FullSceneData -> DataType.SCENE.defaultCardWidth
+        is PerformerData -> DataType.PERFORMER.defaultCardWidth
+        is ImageData -> DataType.IMAGE.defaultCardWidth
+        is GalleryData -> DataType.GALLERY.defaultCardWidth
+        is MarkerData -> DataType.MARKER.defaultCardWidth
+        is GroupData -> DataType.GROUP.defaultCardWidth
+        is GroupRelationshipData -> DataType.GROUP.defaultCardWidth
+        is TagData -> DataType.TAG.defaultCardWidth
+        is StudioData -> DataType.STUDIO.defaultCardWidth
+        is FilterArgs -> item.dataType.defaultCardWidth
+        is CreateNew -> item.dataType.defaultCardWidth
+        else -> DataType.SCENE.defaultCardWidth
+    }
+    return (defaultWidth / 2f) * zoomRatio
+}
+
 @Composable
 fun StashCard(
     uiConfig: ComposeUiConfig,
@@ -504,6 +516,9 @@ fun StashCard(
     modifier: Modifier = Modifier,
     cardContext: CardContext = CardContext.None,
 ) {
+    val widthDp = getDynamicCardWidthDp(item, uiConfig.cardSettings.columns)
+    val cardModifier = modifier.width(widthDp.dp)
+
     when (item) {
         is SlimSceneData? -> {
             SceneCard(
@@ -512,7 +527,7 @@ fun StashCard(
                 onClick = { item?.let(itemOnClick) },
                 longClicker,
                 getFilterAndPosition,
-                modifier,
+                cardModifier,
                 cardContext = cardContext as? CardContext.SceneCardContext,
             )
         }
@@ -524,7 +539,7 @@ fun StashCard(
                 onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
-                modifier,
+                cardModifier,
                 cardContext = cardContext as? CardContext.SceneCardContext,
             )
         }
@@ -536,7 +551,7 @@ fun StashCard(
                 onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
-                modifier,
+                cardModifier,
             )
         }
 
@@ -547,7 +562,7 @@ fun StashCard(
                 onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
-                modifier,
+                cardModifier,
             )
         }
 
@@ -558,7 +573,7 @@ fun StashCard(
                 onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
-                modifier,
+                cardModifier,
             )
         }
 
@@ -569,7 +584,7 @@ fun StashCard(
                 onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
-                modifier,
+                cardModifier,
             )
         }
 
@@ -580,7 +595,7 @@ fun StashCard(
                 onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
-                modifier,
+                cardModifier,
                 cardContext = cardContext as? CardContext.GroupCardContext,
             )
         }
@@ -592,7 +607,7 @@ fun StashCard(
                 onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
-                modifier,
+                cardModifier,
                 subtitle = item.description,
             )
         }
@@ -604,7 +619,7 @@ fun StashCard(
                 onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
-                modifier,
+                cardModifier,
             )
         }
 
@@ -615,7 +630,7 @@ fun StashCard(
                 onClick = { itemOnClick(item) },
                 longClicker,
                 getFilterAndPosition,
-                modifier,
+                cardModifier,
             )
         }
 
@@ -626,7 +641,7 @@ fun StashCard(
                 longClicker = longClicker,
                 getFilterAndPosition = getFilterAndPosition,
                 uiConfig = uiConfig,
-                modifier = modifier,
+                modifier = cardModifier,
             )
         }
 
@@ -638,8 +653,7 @@ fun StashCard(
                     Text(text = item.name.replaceFirstChar(Char::titlecase))
                 },
                 uiConfig = uiConfig,
-                imageWidth = dataTypeImageWidth(item.dataType).dp / 2,
-                imageHeight = dataTypeImageHeight(item.dataType).dp / 2,
+                aspectRatio = dataTypeImageWidth(item.dataType).toFloat() / dataTypeImageHeight(item.dataType).toFloat(),
                 imageContent = {
                     Image(
                         painter = painterResource(id = R.drawable.baseline_add_box_24),
@@ -649,7 +663,7 @@ fun StashCard(
                 onClick = { itemOnClick.invoke(item) },
                 longClicker = longClicker,
                 getFilterAndPosition = getFilterAndPosition,
-                modifier = modifier,
+                modifier = cardModifier,
             )
         }
 

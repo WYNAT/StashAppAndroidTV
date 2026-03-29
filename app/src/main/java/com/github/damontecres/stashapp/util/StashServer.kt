@@ -108,7 +108,7 @@ data class StashServer(
             server: StashServer,
         ) {
             val manager = PreferenceManager.getDefaultSharedPreferences(context)
-            manager.edit(true) {
+            manager.edit {
                 putString(SettingsFragment.PREF_STASH_URL, server.url)
                 putString(SettingsFragment.PREF_STASH_API_KEY, server.apiKey)
             }
@@ -123,11 +123,11 @@ data class StashServer(
             val manager = PreferenceManager.getDefaultSharedPreferences(context)
             val serverKey = SERVER_PREF_PREFIX + server.url
             val apiKeyKey = SERVER_APIKEY_PREF_PREFIX + server.url
-            manager.edit(true) {
+            manager.edit {
                 remove(serverKey)
                 remove(apiKeyKey)
             }
-            server.serverPreferences.preferences.edit(true) {
+            server.serverPreferences.preferences.edit {
                 clear()
             }
         }
@@ -139,7 +139,7 @@ data class StashServer(
             val manager = PreferenceManager.getDefaultSharedPreferences(context)
             val newServerKey = SERVER_PREF_PREFIX + newServer.url
             val newApiKeyKey = SERVER_APIKEY_PREF_PREFIX + newServer.url
-            manager.edit(true) {
+            manager.edit {
                 putString(newServerKey, newServer.url)
                 putString(newApiKeyKey, newServer.apiKey)
             }
@@ -158,7 +158,7 @@ data class StashServer(
             val newServerKey = SERVER_PREF_PREFIX + newServer.url
             val newApiKeyKey =
                 SERVER_APIKEY_PREF_PREFIX + newServer.url
-            manager.edit(true) {
+            manager.edit {
                 if (current != null) {
                     putString(currentServerKey, current.url)
                     putString(currentApiKeyKey, current.apiKey)

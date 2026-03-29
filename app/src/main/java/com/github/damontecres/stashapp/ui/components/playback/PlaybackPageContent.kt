@@ -497,16 +497,6 @@ class PlaybackViewModel : ViewModel() {
     }
 }
 
-val playbackScaleOptions =
-    mapOf(
-        ContentScale.Fit to "Fit",
-        ContentScale.None to "None",
-        ContentScale.Crop to "Crop",
-//        ContentScale.Inside to "Inside",
-        ContentScale.FillBounds to "Fill",
-        ContentScale.FillWidth to "Fill Width",
-        ContentScale.FillHeight to "Fill Height",
-    )
 
 data class SpriteData(
     val start: Duration,
@@ -587,6 +577,7 @@ fun PlaybackPageContent(
     var contentScale by remember { mutableStateOf(ContentScale.Fit) }
     var playbackSpeed by remember { mutableFloatStateOf(1.0f) }
     LaunchedEffect(playbackSpeed) { player.setPlaybackSpeed(playbackSpeed) }
+    var isLooping by remember { mutableStateOf(player.repeatMode == Player.REPEAT_MODE_ONE) }
 
     val presentationState = rememberPresentationState(player)
     val scaledModifier =
@@ -1053,6 +1044,32 @@ fun PlaybackPageContent(
                                     com.github.damontecres.stashapp.util.HandyManager.stop()
                                 }
                             }
+
+                            PlaybackAction.ToggleRepeat -> {
+                                isLooping = !isLooping
+                                player.repeatMode = if (isLooping) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+                            }
+
+                            PlaybackAction.Rewind -> {
+                                player.seekBack()
+                            }
+
+                            PlaybackAction.FastForward -> {
+                                player.seekForward()
+                            }
+
+                            PlaybackAction.SkipPrevious -> {
+                                player.seekToPrevious()
+                            }
+
+                            PlaybackAction.SkipNext -> {
+                                player.seekToNext()
+                            }
+
+                            PlaybackAction.ShowCaptions, PlaybackAction.ShowSettings -> {
+                                // These are handled locally in PlaybackControls.kt via state triggers
+                                // But we include them here to satisfy the exhaustive when
+                            }
                         }
                     },
                     onSeekBarChange = seekBarState::onValueChange,
@@ -1094,6 +1111,7 @@ fun PlaybackPageContent(
                     videoDecoder = videoDecoder,
                     audioDecoder = audioDecoder,
                     spriteData = spriteImageLoaded,
+                    isLooping = isLooping,
                 )
             }
         }

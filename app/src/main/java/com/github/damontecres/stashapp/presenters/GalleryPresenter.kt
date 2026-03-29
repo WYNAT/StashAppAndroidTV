@@ -30,7 +30,9 @@ class GalleryPresenter(
 
         cardView.setUpExtraRow(dataTypeMap, null)
 
-        cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT)
+        val w = com.github.damontecres.stashapp.util.getDynamicCardWidth(cardView.context, DataType.GALLERY)
+        val h = com.github.damontecres.stashapp.util.getDynamicCardHeight(cardView.context, DataType.GALLERY)
+        cardView.setMainImageDimensions(w, h)
         val coverImage = item.paths.cover
         loadImage(cardView, coverImage, defaultDrawable = R.drawable.default_gallery)
 

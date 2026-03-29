@@ -23,10 +23,9 @@ val detectTvDevice by lazy {
     val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as? UiModeManager
 
     val hasLeanback = pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
-    val hasTelevision = pm.hasSystemFeature(PackageManager.FEATURE_TELEVISION)
     val uiIsTv = uiModeManager?.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
 
-    val isTvDevice = hasLeanback || hasTelevision || uiIsTv
+    val isTvDevice = hasLeanback || uiIsTv
     Log.i("isTvDevice", "isTvDevice=$isTvDevice")
     isTvDevice
 }

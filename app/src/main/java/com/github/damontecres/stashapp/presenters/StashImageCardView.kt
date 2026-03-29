@@ -100,7 +100,7 @@ class StashImageCardView(
     val imageView: ImageView get() = super.mainImageView!!
 
     private val iconTextView: TextView
-    private lateinit var iconRow: View
+    private val iconRow: View
     private val content2: TextView
 
     private val cardOverlay = findViewById<View>(R.id.card_overlay)

@@ -59,7 +59,9 @@ class GroupPresenter(
             }
         }
 
-        cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT)
+        val w = com.github.damontecres.stashapp.util.getDynamicCardWidth(cardView.context, DataType.GROUP)
+        val h = com.github.damontecres.stashapp.util.getDynamicCardHeight(cardView.context, DataType.GROUP)
+        cardView.setMainImageDimensions(w, h)
         loadImage(cardView, item.front_image_path, defaultDrawable = R.drawable.default_group)
 
         cardView.setRating100(item.rating100)

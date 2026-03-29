@@ -41,6 +41,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
+import android.content.res.Configuration
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -81,6 +83,18 @@ import kotlin.time.Duration.Companion.seconds
 
 private const val TAG = "PlaybackControls"
 
+private val speedOptions = listOf(".25", ".5", ".75", "1.0", "1.25", "1.5", "2.0")
+
+val playbackScaleOptions =
+    mapOf(
+        ContentScale.Fit to "Fit",
+        ContentScale.None to "None",
+        ContentScale.Crop to "Crop",
+        ContentScale.FillBounds to "Fill",
+        ContentScale.FillWidth to "Fill Width",
+        ContentScale.FillHeight to "Fill Height",
+    )
+
 sealed interface PlaybackAction {
     data object OCount : PlaybackAction
 
@@ -94,6 +108,13 @@ sealed interface PlaybackAction {
 
     data object ShowSceneDetails : PlaybackAction
     data object ToggleHandy : PlaybackAction
+    data object Rewind : PlaybackAction
+    data object FastForward : PlaybackAction
+    data object ShowCaptions : PlaybackAction
+    data object ShowSettings : PlaybackAction
+    data object SkipPrevious : PlaybackAction
+    data object SkipNext : PlaybackAction
+    data object ToggleRepeat : PlaybackAction
 
     data class ToggleCaptions(
         val index: Int,
@@ -137,11 +158,24 @@ fun PlaybackControls(
     seekBarIntervals: Int,
     isHandyEnabled: Boolean = false,
     showHandyIcon: Boolean = false,
+    isLooping: Boolean = false,
     modifier: Modifier = Modifier,
+    isMobile: Boolean = !isTvDevice,
     initialFocusRequester: FocusRequester = remember { FocusRequester() },
     seekBarInteractionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val scope = rememberCoroutineScope()
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val isMobile = !isTvDevice 
+    val hideSecondaryButtons = isMobile && !isLandscape
+    val buttonSize = if (isMobile) 48.dp else 56.dp
+
+    var showCaptionDialog by remember { mutableStateOf(false) }
+    var showOptionsDialog by remember { mutableStateOf(false) }
+    var showAudioDialog by remember { mutableStateOf(false) }
+    var showSpeedDialog by remember { mutableStateOf(false) }
+    var showScaleDialog by remember { mutableStateOf(false) }
 
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val onControllerInteraction = {
@@ -193,6 +227,20 @@ fun PlaybackControls(
                 oCount = oCounter,
                 moreButtonOptions = moreButtonOptions,
                 sfwMode = sfwMode,
+                isMobile = isMobile,
+                hideSecondaryInMenu = hideSecondaryButtons, // If hiding in row, show in menu
+                buttonSize = buttonSize,
+                captionsAvailable = captions.isNotEmpty(),
+                showHandyIcon = showHandyIcon,
+                isLooping = isLooping,
+                onShowCaptions = { 
+                    onControllerInteractionForDialog()
+                    showCaptionDialog = true 
+                },
+                onShowSettings = { 
+                    onControllerInteractionForDialog()
+                    showOptionsDialog = true 
+                },
                 modifier = Modifier,
             )
             PlaybackButtons(
@@ -202,27 +250,115 @@ fun PlaybackControls(
                 showPlay = showPlay,
                 previousEnabled = previousEnabled,
                 nextEnabled = nextEnabled,
+                hideSecondaryButtons = hideSecondaryButtons,
+                isMobile = isMobile,
+                buttonSize = buttonSize,
                 modifier = Modifier,
             )
-            RightPlaybackButtons(
-                modifier = Modifier,
-                captions = captions,
-                onControllerInteraction = onControllerInteraction,
-                onControllerInteractionForDialog = onControllerInteractionForDialog,
-                onPlaybackActionClick = onPlaybackActionClick,
-                subtitleIndex = subtitleIndex,
-                audioOptions = audioOptions,
-                audioIndex = audioIndex,
-                playbackSpeed = playbackSpeed,
-                scale = scale,
-                isHandyEnabled = isHandyEnabled,
-                showHandyIcon = showHandyIcon,
-            )
+            if (!isMobile || isLandscape) {
+                RightPlaybackButtons(
+                    modifier = Modifier,
+                    captions = captions,
+                    onControllerInteraction = onControllerInteraction,
+                    onControllerInteractionForDialog = onControllerInteractionForDialog,
+                    onPlaybackActionClick = onPlaybackActionClick,
+                    subtitleIndex = subtitleIndex,
+                    audioOptions = audioOptions,
+                    audioIndex = audioIndex,
+                    playbackSpeed = playbackSpeed,
+                    scale = scale,
+                    isHandyEnabled = isHandyEnabled,
+                    showHandyIcon = showHandyIcon,
+                    isLooping = isLooping,
+                    buttonSize = buttonSize,
+                )
+            } else {
+                // Placeholder to keep SpaceBetween alignment balanced
+                Box(modifier = Modifier.size(buttonSize)) 
+            }
         }
     }
-}
 
-@OptIn(UnstableApi::class, ExperimentalMaterial3Api::class)
+
+    // Logic for dialogs (moved from RightPlaybackButtons to be accessible by both)
+    if (showCaptionDialog) {
+        val context = LocalContext.current
+        val options = captions.map { it.displayString(context) }
+        BottomDialog(
+            choices = options,
+            currentChoice = subtitleIndex,
+            onDismissRequest = {
+                onControllerInteraction.invoke()
+                showCaptionDialog = false
+            },
+            onSelectChoice = { index, _ ->
+                onPlaybackActionClick.invoke(PlaybackAction.ToggleCaptions(index))
+            },
+            gravity = Gravity.END,
+        )
+    }
+    if (showOptionsDialog) {
+        val options = listOf("Audio Track", "Playback Speed", "Video Scale")
+        BottomDialog(
+            choices = options,
+            currentChoice = null,
+            onDismissRequest = {
+                onControllerInteraction.invoke()
+                showOptionsDialog = false
+            },
+            onSelectChoice = { index, _ ->
+                when (index) {
+                    0 -> showAudioDialog = true
+                    1 -> showSpeedDialog = true
+                    2 -> showScaleDialog = true
+                }
+            },
+            gravity = Gravity.END,
+        )
+    }
+    if (showAudioDialog) {
+        BottomDialog(
+            choices = audioOptions,
+            currentChoice = audioIndex,
+            onDismissRequest = {
+                onControllerInteraction.invoke()
+                showAudioDialog = false
+            },
+            onSelectChoice = { index, _ ->
+                onPlaybackActionClick.invoke(PlaybackAction.ToggleAudio(index))
+            },
+            gravity = Gravity.END,
+        )
+    }
+    if (showSpeedDialog) {
+        BottomDialog(
+            choices = speedOptions,
+            currentChoice = speedOptions.indexOf(playbackSpeed.toString()),
+            onDismissRequest = {
+                onControllerInteraction.invoke()
+                showSpeedDialog = false
+            },
+            onSelectChoice = { _, value ->
+                onPlaybackActionClick.invoke(PlaybackAction.PlaybackSpeed(value.toFloat()))
+            },
+            gravity = Gravity.END,
+        )
+    }
+    if (showScaleDialog) {
+        BottomDialog(
+            choices = playbackScaleOptions.values.toList(),
+            currentChoice = playbackScaleOptions.keys.toList().indexOf(scale),
+            onDismissRequest = {
+                onControllerInteraction.invoke()
+                showScaleDialog = false
+            },
+            onSelectChoice = { index, _ ->
+                onPlaybackActionClick.invoke(PlaybackAction.Scale(playbackScaleOptions.keys.toList()[index]))
+            },
+            gravity = Gravity.END,
+        )
+    }
+}
 @Composable
 fun SeekBar(
     scene: Scene,
@@ -320,7 +456,16 @@ fun LeftPlaybackButtons(
     showDebugInfo: Boolean,
     oCount: Int,
     moreButtonOptions: MoreButtonOptions,
+    isMobile: Boolean = false,
+    hideSecondaryInMenu: Boolean = true,
+    buttonSize: androidx.compose.ui.unit.Dp = 56.dp,
+    captionsAvailable: Boolean = false,
+    showHandyIcon: Boolean = false,
+    isLooping: Boolean = false,
     modifier: Modifier = Modifier,
+    // Add parameters to trigger dialogs on mobile
+    onShowCaptions: (() -> Unit)? = null,
+    onShowSettings: (() -> Unit)? = null,
 ) {
     var showMoreOptions by remember { mutableStateOf(false) }
     Row(
@@ -335,49 +480,72 @@ fun LeftPlaybackButtons(
                 showMoreOptions = true
             },
             enabled = true,
+            buttonSize = buttonSize,
             onControllerInteraction = onControllerInteraction,
         )
-        // OCount
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(2.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            PlaybackOCountButton(
-                sfwMode = sfwMode,
-                onClick = {
-                    onControllerInteraction.invoke()
-                    onPlaybackActionClick.invoke(PlaybackAction.OCount)
-                },
-                enabled = true,
-                onControllerInteraction = onControllerInteraction,
-            )
-            Text(
-                text = oCount.toString(),
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 16.sp,
-            )
+        // OCount (only if not mobile, or if mobile landscape)
+        if (!isMobile || (isMobile && !hideSecondaryInMenu)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                PlaybackOCountButton(
+                    sfwMode = sfwMode,
+                    onClick = {
+                        onControllerInteraction.invoke()
+                        onPlaybackActionClick.invoke(PlaybackAction.OCount)
+                    },
+                    enabled = true,
+                    onControllerInteraction = onControllerInteraction,
+                    buttonSize = buttonSize
+                )
+                Text(
+                    text = oCount.toString(),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 16.sp,
+                )
+            }
         }
     }
     if (showMoreOptions) {
-        // TODO options need context about what to display
         val options =
             buildList {
                 addAll(moreButtonOptions.options.keys)
                 add(if (showDebugInfo) "Hide transcode info" else "Show transcode info")
+                if (isMobile) {
+                    if (hideSecondaryInMenu) {
+                        add("Previous Video")
+                        add("Next Video")
+                        if (captionsAvailable) add("Captions")
+                        add("Settings")
+                        if (showHandyIcon) add("Handy")
+                        add(if (isLooping) "Loop: On" else "Loop: Off")
+                        add("O-Count ($oCount)")
+                    }
+                }
             }
         BottomDialog(
             choices = options,
             onDismissRequest = { showMoreOptions = false },
             onSelectChoice = { index, choice ->
-                val action = moreButtonOptions.options[choice] ?: PlaybackAction.ShowDebug
-                onPlaybackActionClick.invoke(action)
+                when (choice) {
+                    "Previous Video" -> onPlaybackActionClick(PlaybackAction.SkipPrevious)
+                    "Next Video" -> onPlaybackActionClick(PlaybackAction.SkipNext)
+                    "Captions" -> onShowCaptions?.invoke()
+                    "Settings" -> onShowSettings?.invoke()
+                    "Handy" -> onPlaybackActionClick(PlaybackAction.ToggleHandy)
+                    "Loop: On", "Loop: Off" -> onPlaybackActionClick(PlaybackAction.ToggleRepeat)
+                    "O-Count ($oCount)" -> onPlaybackActionClick(PlaybackAction.OCount)
+                    else -> {
+                        val action = moreButtonOptions.options[choice] ?: PlaybackAction.ShowDebug
+                        onPlaybackActionClick.invoke(action)
+                    }
+                }
             },
             gravity = Gravity.START,
         )
     }
 }
-
-private val speedOptions = listOf(".25", ".5", ".75", "1.0", "1.25", "1.5", "2.0")
 
 @Composable
 fun RightPlaybackButtons(
@@ -390,8 +558,10 @@ fun RightPlaybackButtons(
     audioIndex: Int?,
     playbackSpeed: Float,
     scale: ContentScale,
+    isLooping: Boolean = false,
     isHandyEnabled: Boolean = false,
     showHandyIcon: Boolean = false,
+    buttonSize: androidx.compose.ui.unit.Dp = 56.dp,
     modifier: Modifier = Modifier,
 ) {
     var showCaptionDialog by remember { mutableStateOf(false) }
@@ -411,6 +581,7 @@ fun RightPlaybackButtons(
                 onControllerInteractionForDialog.invoke()
                 showCaptionDialog = true
             },
+            buttonSize = buttonSize,
             onControllerInteraction = onControllerInteraction,
         )
         // Handy
@@ -423,9 +594,22 @@ fun RightPlaybackButtons(
                 },
                 enabled = true,
                 onControllerInteraction = onControllerInteraction,
+                buttonSize = buttonSize,
                 modifier = if (isHandyEnabled) Modifier else Modifier.alpha(0.5f)
             )
         }
+        // Repeat
+        PlaybackButton(
+            iconRes = R.drawable.baseline_repeat_24,
+            onClick = {
+                onControllerInteraction.invoke()
+                onPlaybackActionClick.invoke(PlaybackAction.ToggleRepeat)
+            },
+            enabled = true,
+            buttonSize = buttonSize,
+            onControllerInteraction = onControllerInteraction,
+            modifier = if (isLooping) Modifier else Modifier.alpha(0.5f)
+        )
         // Playback speed, etc
         PlaybackButton(
             iconRes = R.drawable.vector_settings,
@@ -434,6 +618,7 @@ fun RightPlaybackButtons(
                 showOptionsDialog = true
             },
             enabled = true,
+            buttonSize = buttonSize,
             onControllerInteraction = onControllerInteraction,
         )
     }
@@ -526,27 +711,34 @@ fun PlaybackButtons(
     showPlay: Boolean,
     previousEnabled: Boolean,
     nextEnabled: Boolean,
+    hideSecondaryButtons: Boolean = false,
+    isMobile: Boolean = false,
+    buttonSize: androidx.compose.ui.unit.Dp = 56.dp,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier.focusGroup(),
         horizontalArrangement = Arrangement.spacedBy(buttonSpacing),
     ) {
-        PlaybackButton(
-            iconRes = R.drawable.baseline_skip_previous_24,
-            onClick = {
-                onControllerInteraction.invoke()
-                player.seekToPrevious()
-            },
-            enabled = previousEnabled,
-            onControllerInteraction = onControllerInteraction,
-        )
+        if (!hideSecondaryButtons) {
+            PlaybackButton(
+                iconRes = R.drawable.baseline_skip_previous_24,
+                onClick = {
+                    onControllerInteraction.invoke()
+                    player.seekToPrevious()
+                },
+                enabled = previousEnabled,
+                buttonSize = buttonSize,
+                onControllerInteraction = onControllerInteraction,
+            )
+        }
         PlaybackButton(
             iconRes = R.drawable.baseline_fast_rewind_24,
             onClick = {
                 onControllerInteraction.invoke()
                 player.seekBack()
             },
+            buttonSize = buttonSize,
             onControllerInteraction = onControllerInteraction,
         )
         PlaybackButton(
@@ -556,6 +748,7 @@ fun PlaybackButtons(
                 onControllerInteraction.invoke()
                 player.playOrPause()
             },
+            buttonSize = buttonSize,
             onControllerInteraction = onControllerInteraction,
         )
         PlaybackButton(
@@ -564,17 +757,21 @@ fun PlaybackButtons(
                 onControllerInteraction.invoke()
                 player.seekForward()
             },
+            buttonSize = buttonSize,
             onControllerInteraction = onControllerInteraction,
         )
-        PlaybackButton(
-            iconRes = R.drawable.baseline_skip_next_24,
-            onClick = {
-                onControllerInteraction.invoke()
-                player.seekToNext()
-            },
-            enabled = nextEnabled,
-            onControllerInteraction = onControllerInteraction,
-        )
+        if (!hideSecondaryButtons) {
+            PlaybackButton(
+                iconRes = R.drawable.baseline_skip_next_24,
+                onClick = {
+                    onControllerInteraction.invoke()
+                    player.seekToNext()
+                },
+                enabled = nextEnabled,
+                buttonSize = buttonSize,
+                onControllerInteraction = onControllerInteraction,
+            )
+        }
     }
 }
 
@@ -584,6 +781,7 @@ fun PlaybackButton(
     onClick: () -> Unit,
     onControllerInteraction: () -> Unit,
     modifier: Modifier = Modifier,
+    buttonSize: androidx.compose.ui.unit.Dp = 56.dp,
     enabled: Boolean = true,
 ) {
     val selectedColor = MaterialTheme.colorScheme.border
@@ -596,11 +794,11 @@ fun PlaybackButton(
                 containerColor = AppColors.TransparentBlack25,
                 focusedContainerColor = selectedColor,
             ),
-        contentPadding = PaddingValues(8.dp),
+        contentPadding = PaddingValues(if (buttonSize < 56.dp) 4.dp else 8.dp),
         modifier =
             modifier
-                .padding(8.dp)
-                .size(56.dp, 56.dp)
+                .padding(if (buttonSize < 56.dp) 4.dp else 8.dp)
+                .size(buttonSize)
                 .onFocusChanged { onControllerInteraction.invoke() },
     ) {
         Icon(
@@ -618,6 +816,7 @@ fun PlaybackFaButton(
     onClick: () -> Unit,
     onControllerInteraction: () -> Unit,
     modifier: Modifier = Modifier,
+    buttonSize: androidx.compose.ui.unit.Dp = 56.dp,
     enabled: Boolean = true,
 ) {
     val selectedColor = MaterialTheme.colorScheme.border
@@ -630,11 +829,11 @@ fun PlaybackFaButton(
                 containerColor = AppColors.TransparentBlack25,
                 focusedContainerColor = selectedColor,
             ),
-        contentPadding = PaddingValues(8.dp),
+        contentPadding = PaddingValues(if (buttonSize < 56.dp) 4.dp else 8.dp),
         modifier =
             modifier
-                .padding(8.dp)
-                .size(56.dp, 56.dp)
+                .padding(if (buttonSize < 56.dp) 4.dp else 8.dp)
+                .size(buttonSize)
                 .onFocusChanged { onControllerInteraction.invoke() },
     ) {
         Box(
@@ -644,7 +843,7 @@ fun PlaybackFaButton(
                 text = stringResource(iconRes),
                 fontFamily = FontAwesome,
                 color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 28.sp,
+                fontSize = if (buttonSize < 56.dp) 20.sp else 28.sp,
                 modifier = Modifier.align(Alignment.Center),
             )
         }

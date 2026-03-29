@@ -31,7 +31,9 @@ class ImagePresenter(
 
         cardView.setUpExtraRow(dataTypeMap, item.o_counter)
 
-        cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT)
+        val w = com.github.damontecres.stashapp.util.getDynamicCardWidth(cardView.context, DataType.IMAGE)
+        val h = com.github.damontecres.stashapp.util.getDynamicCardHeight(cardView.context, DataType.IMAGE)
+        cardView.setMainImageDimensions(w, h)
 
         loadImage(
             cardView,

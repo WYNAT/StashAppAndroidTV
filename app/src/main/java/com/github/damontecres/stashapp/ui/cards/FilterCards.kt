@@ -74,7 +74,7 @@ fun ViewAllCard(
         longClicker = longClicker,
         getFilterAndPosition = getFilterAndPosition,
         uiConfig = uiConfig,
-        imageWidth = width.dp / 2,
+        aspectRatio = width.toFloat() / height.toFloat(),
         imageContent = {
             Image(
                 imageVector = ImageVector.vectorResource(id = R.drawable.baseline_camera_indoor_48),
@@ -83,7 +83,6 @@ fun ViewAllCard(
                 modifier = Modifier.fillMaxSize(),
             )
         },
-        imageHeight = height.dp / 2,
         imageUrl = null,
         videoUrl = null,
         title = AnnotatedString(stringResource(R.string.stashapp_view_all)),

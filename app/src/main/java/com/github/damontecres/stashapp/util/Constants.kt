@@ -1200,16 +1200,53 @@ fun View.updateLayoutParams(transform: ViewGroup.LayoutParams.() -> Unit) {
     layoutParams = lp
 }
 
+fun getDynamicCardWidth(
+    context: Context,
+    dataType: DataType,
+): Int {
+    val displayMetrics = context.resources.displayMetrics
+    val screenWidthDp = displayMetrics.widthPixels / displayMetrics.density
+    
+    val cardSizeString = PreferenceManager
+        .getDefaultSharedPreferences(context)
+        .getString(context.getString(R.string.pref_key_card_size), context.getString(R.string.card_size_default)) 
+        ?: context.getString(R.string.card_size_default)
+    val cardSize = cardSizeString.toIntOrNull() ?: 5
+    
+    val zoomRatio = 5f / cardSize
+    val adjustedWidth = (dataType.defaultCardWidth / 2f) * zoomRatio
+    val columns = maxOf(1, (screenWidthDp / adjustedWidth).toInt())
+    
+    // Leanback subtracts some margin usually, but we can distribute equally
+    return (displayMetrics.widthPixels / columns) - (16 * displayMetrics.density).toInt()
+}
+
+fun getDynamicCardHeight(
+    context: Context,
+    dataType: DataType,
+): Int {
+    val w = getDynamicCardWidth(context, dataType)
+    val ratio = dataType.defaultCardWidth.toFloat() / dataType.defaultCardHeight.toFloat()
+    return (w / ratio).toInt()
+}
+
 fun calculatePageSize(
     context: Context,
     dataType: DataType,
 ): Int {
-    val cardSize =
-        PreferenceManager
-            .getDefaultSharedPreferences(context)
-            .getInt("cardSize", context.getString(R.string.card_size_default))
-    val numberOfColumns =
-        (cardSize * (ScenePresenter.CARD_WIDTH.toDouble() / dataType.defaultCardWidth)).toInt()
+    val displayMetrics = context.resources.displayMetrics
+    val screenWidthDp = displayMetrics.widthPixels / displayMetrics.density
+
+    val cardSizeString = PreferenceManager
+        .getDefaultSharedPreferences(context)
+        .getString(context.getString(R.string.pref_key_card_size), context.getString(R.string.card_size_default)) 
+        ?: context.getString(R.string.card_size_default)
+    val cardSize = cardSizeString.toIntOrNull() ?: 5
+
+    val zoomRatio = 5f / cardSize
+    val adjustedWidth = (dataType.defaultCardWidth / 2f) * zoomRatio
+    val numberOfColumns = maxOf(1, (screenWidthDp / adjustedWidth).toInt())
+
     val maxSearchResults =
         PreferenceManager
             .getDefaultSharedPreferences(context)

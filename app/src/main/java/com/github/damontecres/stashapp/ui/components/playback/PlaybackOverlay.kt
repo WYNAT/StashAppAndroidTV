@@ -165,6 +165,7 @@ fun PlaybackOverlay(
     spriteData: List<SpriteData>,
     isHandyEnabled: Boolean = false,
     showHandyIcon: Boolean = false,
+    isLooping: Boolean = false,
     modifier: Modifier = Modifier,
     seekPreviewPlaceholder: Painter? = null,
     seekBarInteractionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -256,10 +257,10 @@ fun PlaybackOverlay(
         }
         val controlHeight = .4f
         val listState = rememberLazyListState()
-        var height = 208.dp
+        var height = 256.dp
         if (!uiConfig.showTitleDuringPlayback || scene.title.isNullOrBlank()) height -= 24.dp
-        if (!uiConfig.showTitleDuringPlayback || scene.subtitle.isNullOrBlank()) height -= 24.dp
-        if (markers.isEmpty()) height -= 24.dp
+        if (!uiConfig.showTitleDuringPlayback || scene.subtitle.isNullOrBlank()) height -= 16.dp
+        if (markers.isEmpty()) height -= 32.dp
         LazyColumn(
             state = listState,
             modifier =
@@ -335,6 +336,7 @@ fun PlaybackOverlay(
                     sfwMode = uiConfig.sfwMode,
                     isHandyEnabled = isHandyEnabled,
                     showHandyIcon = showHandyIcon,
+                    isLooping = isLooping,
                 )
             }
             if (markers.isNotEmpty()) {
@@ -351,9 +353,9 @@ fun PlaybackOverlay(
                     SceneMarkerBar(
                         modifier =
                             Modifier
-                                .padding(start = 8.dp, top = 64.dp, bottom = 64.dp)
+                                .padding(start = 8.dp, top = 8.dp, bottom = 8.dp)
                                 .fillMaxWidth()
-                                .height(height),
+                                .height(132.dp),
                         markers = markers,
                         player = playerControls,
                         controllerViewState = controllerViewState,
@@ -599,8 +601,7 @@ fun BasicMarkerCard(
         longClicker = { _, _ -> },
         getFilterAndPosition = null,
         uiConfig = uiConfig,
-        imageWidth = DataType.MARKER.defaultCardWidth.dp / 2,
-        imageHeight = DataType.MARKER.defaultCardHeight.dp / 2,
+        aspectRatio = DataType.MARKER.defaultCardWidth.toFloat() / DataType.MARKER.defaultCardHeight.toFloat(),
         imageUrl = marker.imageUrl,
         defaultImageDrawableRes = R.drawable.default_scene,
         videoUrl = null,

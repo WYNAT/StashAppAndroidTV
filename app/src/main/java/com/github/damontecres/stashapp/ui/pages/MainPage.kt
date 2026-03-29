@@ -435,7 +435,7 @@ fun HomePageRow(
             }
             if (row.data.isNotEmpty()) {
                 item {
-                    ViewAllCard(
+                    StashCard(
                         modifier =
                             Modifier
                                 .onFocusChanged { focusState ->
@@ -447,7 +447,7 @@ fun HomePageRow(
                                     focusedIndex == row.data.size,
                                     Modifier.focusRequester(firstFocus),
                                 ),
-                        filter = row.filter,
+                        item = row.filter,
                         itemOnClick = {
                             itemOnClick.onClick(
                                 row.filter,

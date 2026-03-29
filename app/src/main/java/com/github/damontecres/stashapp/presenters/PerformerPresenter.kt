@@ -50,7 +50,9 @@ open class PerformerPresenter(
             cardView.setIsFavorite()
         }
 
-        cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT)
+        val w = com.github.damontecres.stashapp.util.getDynamicCardWidth(cardView.context, DataType.PERFORMER)
+        val h = com.github.damontecres.stashapp.util.getDynamicCardHeight(cardView.context, DataType.PERFORMER)
+        cardView.setMainImageDimensions(w, h)
         if (item.image_path != null) {
             loadImage(cardView, item.image_path, true)
         }

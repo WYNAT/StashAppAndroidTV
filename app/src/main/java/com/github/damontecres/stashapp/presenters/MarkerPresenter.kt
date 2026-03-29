@@ -42,7 +42,9 @@ class MarkerPresenter(
         dataTypeMap[DataType.TAG] = item.tags.size + 1
         cardView.setUpExtraRow(dataTypeMap, null)
 
-        cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT)
+        val w = com.github.damontecres.stashapp.util.getDynamicCardWidth(cardView.context, DataType.MARKER)
+        val h = com.github.damontecres.stashapp.util.getDynamicCardHeight(cardView.context, DataType.MARKER)
+        cardView.setMainImageDimensions(w, h)
         loadImage(cardView, item.screenshot, defaultDrawable = R.drawable.default_scene)
         cardView.videoUrl = item.stream
     }

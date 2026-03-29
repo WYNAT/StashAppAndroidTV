@@ -50,7 +50,9 @@ class TagPresenter(
                 )
             cardView.setTextOverlayText(StashImageCardView.OverlayPosition.BOTTOM_LEFT, childText)
         }
-        cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT)
+        val w = com.github.damontecres.stashapp.util.getDynamicCardWidth(cardView.context, DataType.TAG)
+        val h = com.github.damontecres.stashapp.util.getDynamicCardHeight(cardView.context, DataType.TAG)
+        cardView.setMainImageDimensions(w, h)
         loadImage(cardView, item.image_path, defaultDrawable = R.drawable.default_tag)
 
         if (item.favorite) {

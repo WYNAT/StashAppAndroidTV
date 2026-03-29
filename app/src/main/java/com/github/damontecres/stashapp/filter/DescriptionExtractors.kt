@@ -388,7 +388,7 @@ fun resolutionName(res: ResolutionEnum): String =
         ResolutionEnum.STANDARD_HD -> "720p"
         ResolutionEnum.FULL_HD -> "1080p"
         ResolutionEnum.QUAD_HD -> "1440p"
-        ResolutionEnum.VR_HD, // Note: deprecated in API, treat same as FOUR_K
+        ResolutionEnum.VR_HD,
         ResolutionEnum.FOUR_K -> "4K"
         ResolutionEnum.FIVE_K -> "5K"
         ResolutionEnum.SIX_K -> "6K"

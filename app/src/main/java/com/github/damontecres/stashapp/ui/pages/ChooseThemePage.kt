@@ -148,8 +148,7 @@ fun ChooseThemePage(
                                 )
                             },
                             uiConfig = uiConfig,
-                            imageWidth = dataTypeImageWidth(DataType.SCENE).dp / 1.5f,
-                            imageHeight = dataTypeImageHeight(DataType.SCENE).dp / 1.5f,
+                            aspectRatio = dataTypeImageWidth(DataType.SCENE).toFloat() / dataTypeImageHeight(DataType.SCENE).toFloat(),
                             longClicker = { _: Any, _ -> },
                             getFilterAndPosition = null,
                             imageOverlay = {

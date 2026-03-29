@@ -4,6 +4,7 @@ All significant changes to the Stash App Android TV project are documented in th
 
 | Version | Type | Description | Impact |
 | :--- | :--- | :--- | :--- |
+| **v0.8.17** | `Improvement` | Beschleunigung der Ladezeit beim ersten Öffnen durch Auslagerung von synchronen SharedPreferences-Aufrufen (Commit zu Apply) und Verschiebung des App-Upgrade-Checks in einen Hintergrund-Thread. | Low |
 | **v0.8.16** | `Fix` / `Improvement` | Fixed inconsistent card sizes in home slider: info area now has a fixed height (88dp) and icon row visibility is controlled dynamically. Added background image preloading for the next 10 items while scrolling in grid views (Scenes, Performers, Studios, Tags, Groups, Galleries, Images, Markers). | Medium |
 | **v0.8.15** | `Fix` | Fixed Handy/Funscript loading: Removed auto-disable logic from setup path which was permanently disabling the integration in SharedPreferences on transient API/network errors. Fixed Game symbol toggle reliability. | Low |
 | **v0.8.14** | `Feature` | Optimized startup performance: implemented stale-while-revalidate for server connection, lazy database initialization, and asynchronous app upgrade handling to significantly reduce startup time on slow devices. | Medium |
