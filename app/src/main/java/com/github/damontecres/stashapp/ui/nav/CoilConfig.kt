@@ -6,6 +6,7 @@ import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.disk.DiskCache
 import coil3.disk.directory
+import coil3.memory.MemoryCache
 import coil3.network.cachecontrol.CacheControlCacheStrategy
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
@@ -26,9 +27,25 @@ fun CoilConfig(
         val diskCacheSize =
             preferences.cachePreferences.imageDiskCacheSize
                 .coerceAtLeast(10)
+        // When cacheExpirationTime == 0 the user wants no caching, so respect HTTP
+        // cache-control headers from the server. Otherwise, ignore those headers and
+        // always use Coil's own disk cache so thumbnails survive across scrolls.
+        val alwaysCache = preferences.cachePreferences.cacheExpirationTime > 0
+
+        val callFactory =
+            Call.Factory { request ->
+                // TODO this seems hacky?
+                serverViewModel.requireServer().okHttpClient.newCall(request)
+            }
+
         ImageLoader
             .Builder(ctx)
-            .diskCache(
+            .memoryCache(
+                MemoryCache
+                    .Builder()
+                    .maxSizePercent(ctx, 0.25)
+                    .build(),
+            ).diskCache(
                 DiskCache
                     .Builder()
                     .directory(ctx.cacheDir.resolve("coil3_image_cache"))
@@ -37,19 +54,19 @@ fun CoilConfig(
             ).crossfade(true)
             .logger(if (cacheLogging) DebugLogger() else null)
             .components {
-                add(
-                    OkHttpNetworkFetcherFactory(
-                        cacheStrategy = { CacheControlCacheStrategy() },
-                        callFactory = {
-                            Call.Factory { request ->
-                                // TODO this seems hacky?
-                                serverViewModel.requireServer().okHttpClient.newCall(
-                                    request,
-                                )
-                            }
-                        },
-                    ),
-                )
+                if (alwaysCache) {
+                    // No cache-control strategy → Coil always writes to / reads from
+                    // its own disk cache, regardless of HTTP response headers.
+                    add(OkHttpNetworkFetcherFactory(callFactory = { callFactory }))
+                } else {
+                    // User disabled caching: respect whatever the server sends.
+                    add(
+                        OkHttpNetworkFetcherFactory(
+                            cacheStrategy = { CacheControlCacheStrategy() },
+                            callFactory = { callFactory },
+                        ),
+                    )
+                }
             }.build()
     }
 }

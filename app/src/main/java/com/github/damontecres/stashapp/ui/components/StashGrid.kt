@@ -65,7 +65,9 @@ import com.github.damontecres.stashapp.suppliers.FilterArgs
 import com.github.damontecres.stashapp.ui.AppColors
 import com.github.damontecres.stashapp.ui.ComposeUiConfig
 import com.github.damontecres.stashapp.ui.FontAwesome
+import androidx.compose.runtime.CompositionLocalProvider
 import com.github.damontecres.stashapp.ui.LocalGlobalContext
+import com.github.damontecres.stashapp.ui.LocalScrollInProgress
 import com.github.damontecres.stashapp.ui.cards.CardContext
 import com.github.damontecres.stashapp.ui.cards.StashCard
 import com.github.damontecres.stashapp.ui.compat.Button
@@ -550,6 +552,7 @@ fun StashGrid(
                 modifier = Modifier.align(Alignment.CenterVertically),
             )
         }
+        CompositionLocalProvider(LocalScrollInProgress provides gridState.isScrollInProgress) {
         Box(
             modifier = Modifier.weight(1f),
         ) {
@@ -699,6 +702,7 @@ fun StashGrid(
                 }
             }
         }
+        } // CompositionLocalProvider(LocalScrollInProgress)
         // Letters
         if (pager.isNotEmpty() &&
             SortOption.isJumpSupported(
