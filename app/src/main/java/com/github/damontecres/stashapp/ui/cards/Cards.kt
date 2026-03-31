@@ -97,6 +97,7 @@ import com.github.damontecres.stashapp.ui.ComposeUiConfig
 import com.github.damontecres.stashapp.ui.FontAwesome
 import com.github.damontecres.stashapp.ui.LocalGlobalContext
 import com.github.damontecres.stashapp.ui.LocalPlayerContext
+import com.github.damontecres.stashapp.ui.LocalScrollInProgress
 import com.github.damontecres.stashapp.ui.compat.Card
 import com.github.damontecres.stashapp.ui.components.LongClicker
 import com.github.damontecres.stashapp.ui.enableMarquee
@@ -469,16 +470,22 @@ fun CardImage(
                 contentDescription = null,
             )
         } else if (imageUrl.isNotNullOrBlank()) {
+            val placeholderPainter = defaultImageDrawableRes?.let { painterResource(id = it) }
+            // Disable crossfade while scrolling so newly-visible cards render immediately
+            // instead of waiting for the animation to complete.
+            val scrollInProgress = LocalScrollInProgress.current
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
                 model =
                     ImageRequest
                         .Builder(LocalContext.current)
                         .data(imageUrl)
-                        .crossfade(crossFade)
+                        .crossfade(crossFade && !scrollInProgress)
                         .build(),
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
+                placeholder = placeholderPainter,
+                error = placeholderPainter,
             )
         } else {
             imageContent?.invoke(this)

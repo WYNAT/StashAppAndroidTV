@@ -57,6 +57,9 @@ data class GlobalContext(
 val LocalGlobalContext =
     compositionLocalOf<GlobalContext> { throw IllegalStateException("Shouldn't call this") }
 
+/** True while the parent grid/list is actively scrolling. Cards can use this to defer image loads. */
+val LocalScrollInProgress = compositionLocalOf { false }
+
 object PlayerContext {
     fun player(
         context: Context,
