@@ -10,6 +10,7 @@ import com.github.damontecres.stashapp.StashApplication
 import com.github.damontecres.stashapp.api.fragment.ImageData
 import com.github.damontecres.stashapp.api.fragment.MarkerData
 import com.github.damontecres.stashapp.api.fragment.StashData
+import com.github.damontecres.stashapp.data.DataType
 import com.github.damontecres.stashapp.playback.PlaybackMode
 import com.github.damontecres.stashapp.suppliers.FilterArgs
 
@@ -17,11 +18,11 @@ import com.github.damontecres.stashapp.suppliers.FilterArgs
  * An [OnItemViewClickedListener] for clicking on [StashData] and [FilterArgs] to navigating to their page
  *
  * @param navigationManager the manager
- * @param imageFilterLookup get the filter and position of the current image clicked for slideshow
+ * @param filterLookup get the filter and position of the current item clicked (used for slideshow and scene playlist context)
  */
 class NavigationOnItemViewClickedListener(
     private val navigationManager: NavigationManager,
-    private val imageFilterLookup: ((item: ImageData) -> FilterAndPosition?)? = null,
+    private val filterLookup: ((item: StashData) -> FilterAndPosition?)? = null,
 ) : OnItemViewClickedListener {
     override fun onItemClicked(
         itemViewHolder: Presenter.ViewHolder?,
@@ -40,7 +41,7 @@ class NavigationOnItemViewClickedListener(
                 }
 
                 is ImageData -> {
-                    val filterAndPosition = imageFilterLookup!!.invoke(item)
+                    val filterAndPosition = filterLookup!!.invoke(item)
                     if (filterAndPosition != null) {
                         Destination.Slideshow(
                             filterAndPosition.filter,
@@ -48,12 +49,25 @@ class NavigationOnItemViewClickedListener(
                             false,
                         )
                     } else {
-                        throw IllegalStateException("imageFilterLookup is null")
+                        throw IllegalStateException("filterLookup is null")
                     }
                 }
 
                 is StashData -> {
-                    Destination.fromStashData(item)
+                    val dataType = Destination.getDataType(item)
+                    if (dataType == DataType.SCENE) {
+                        val filterAndPosition = filterLookup?.invoke(item)
+                        // Only use filter context when the filter's dataType actually matches
+                        val validFilter = filterAndPosition?.takeIf { it.filter.dataType == DataType.SCENE }
+                        Destination.Item(
+                            dataType,
+                            item.id,
+                            validFilter?.filter,
+                            validFilter?.position ?: -1,
+                        )
+                    } else {
+                        Destination.fromStashData(item)
+                    }
                 }
 
                 is FilterArgs -> {

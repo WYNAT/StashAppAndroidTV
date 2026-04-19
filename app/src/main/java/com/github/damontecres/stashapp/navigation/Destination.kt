@@ -69,6 +69,8 @@ sealed class Destination(
     data class Item(
         val dataType: DataType,
         val id: String,
+        val filterArgs: FilterArgs? = null,
+        val filterPosition: Int = -1,
     ) : Destination()
 
     @Serializable
@@ -81,6 +83,8 @@ sealed class Destination(
         val sceneId: String,
         val position: Long,
         val mode: PlaybackMode,
+        val filterArgs: FilterArgs? = null,
+        val filterPosition: Int = -1,
     ) : Destination(true)
 
     @Serializable
@@ -105,9 +109,10 @@ sealed class Destination(
         val filterArgs: FilterArgs,
         val position: Int,
         val duration: Long? = null,
+        val startPosition: Long = 0L,
     ) : Destination(true) {
         override fun toString(): String =
-            "Playlist(destId=$destId, dataType=${filterArgs.dataType}, position=$position, duration=$duration)"
+            "Playlist(destId=$destId, dataType=${filterArgs.dataType}, position=$position, duration=$duration, startPosition=$startPosition)"
     }
 
     @Serializable

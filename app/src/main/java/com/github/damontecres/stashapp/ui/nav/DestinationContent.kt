@@ -252,6 +252,8 @@ fun DestinationContent(
                                     destination.id,
                                     position,
                                     mode,
+                                    destination.filterArgs,
+                                    destination.filterPosition,
                                 ),
                             )
                         },

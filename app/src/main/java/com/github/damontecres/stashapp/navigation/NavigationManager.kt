@@ -139,6 +139,21 @@ class NavigationManagerLeanback(
             // Enable so that backing out of the fragment will close the app
             onBackPressedCallback.isEnabled = true
         }
+        // Redirect single-scene Playback with filter context to PlaylistScenesFragment
+        if (destination is Destination.Playback &&
+            destination.filterArgs != null &&
+            destination.filterPosition >= 0
+        ) {
+            navigate(
+                Destination.Playlist(
+                    filterArgs = destination.filterArgs,
+                    position = destination.filterPosition,
+                    startPosition = destination.position,
+                ),
+            )
+            return
+        }
+
         val fragment =
             when (destination) {
                 Destination.Main -> {

@@ -47,6 +47,7 @@ import com.github.damontecres.stashapp.data.DataType
 import com.github.damontecres.stashapp.data.OCounter
 import com.github.damontecres.stashapp.navigation.Destination
 import com.github.damontecres.stashapp.navigation.NavigationOnItemViewClickedListener
+import com.github.damontecres.stashapp.suppliers.FilterArgs
 import com.github.damontecres.stashapp.playback.PlaybackMode
 import com.github.damontecres.stashapp.playback.findPossibleTranscodeLabels
 import com.github.damontecres.stashapp.playback.streamChoiceFromLabel
@@ -95,6 +96,8 @@ class SceneDetailsFragment : DetailsSupportFragment() {
 
     private lateinit var sceneId: String
     private var sceneData: FullSceneData? = null
+    private var sceneFilterArgs: FilterArgs? = null
+    private var sceneFilterPosition: Int = -1
 
     private lateinit var queryEngine: QueryEngine
     private lateinit var mutationEngine: MutationEngine
@@ -215,8 +218,11 @@ class SceneDetailsFragment : DetailsSupportFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        sceneId = requireArguments().getDestination<Destination.Item>().id
-        Log.d(TAG, "onCreate: sceneId=$sceneId")
+        val itemDest = requireArguments().getDestination<Destination.Item>()
+        sceneId = itemDest.id
+        sceneFilterArgs = itemDest.filterArgs
+        sceneFilterPosition = itemDest.filterPosition
+        Log.d(TAG, "onCreate: sceneId=$sceneId filterPosition=$sceneFilterPosition")
 
         queryEngine = QueryEngine(StashServer.requireCurrentServer())
         mutationEngine = MutationEngine(StashServer.requireCurrentServer())
@@ -608,7 +614,7 @@ class SceneDetailsFragment : DetailsSupportFragment() {
                                         else -> PlaybackMode.Choose
                                     }
 
-                                val playbackDest = Destination.Playback(sceneId, position, mode)
+                                val playbackDest = Destination.Playback(sceneId, position, mode, sceneFilterArgs, sceneFilterPosition)
                                 serverViewModel.navigationManager.navigate(playbackDest)
                             } else {
                                 throw IllegalArgumentException("Action $action (id=${action.id} is not supported!")
@@ -719,6 +725,8 @@ class SceneDetailsFragment : DetailsSupportFragment() {
                                 sceneId,
                                 position,
                                 PlaybackMode.ForcedTranscode(label),
+                                sceneFilterArgs,
+                                sceneFilterPosition,
                             )
                         serverViewModel.navigationManager.navigate(playbackDest)
                     }

@@ -85,9 +85,17 @@ fun ApplicationContent(
                 }
 
                 is StashData -> {
-                    navigationManager.navigate(
-                        Destination.fromStashData(item),
-                    )
+                    val dataType = Destination.getDataType(item)
+                    if (dataType == DataType.SCENE) {
+                        val validFilter = filterAndPosition?.takeIf { it.filter.dataType == DataType.SCENE }
+                        navigationManager.navigate(
+                            Destination.Item(dataType, item.id, validFilter?.filter, validFilter?.position ?: -1),
+                        )
+                    } else {
+                        navigationManager.navigate(
+                            Destination.fromStashData(item),
+                        )
+                    }
                 }
 
                 else -> {

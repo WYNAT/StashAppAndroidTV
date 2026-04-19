@@ -269,5 +269,9 @@
     <string name="funscript_loading">Lade interaktives Skript...</string>
     <string name="funscript_success">Skript erfolgreich geladen.</string>
     <string name="funscript_error">Fehler beim Laden des Skripts (Timeout).</string>
+    <string name="autoplay_enable">Autoplay aktivieren</string>
+    <string name="autoplay_disable">Autoplay deaktivieren</string>
+    <string name="autoplay_enabled">Autoplay aktiviert</string>
+    <string name="autoplay_disabled">Autoplay deaktiviert</string>
 
 </resources>
