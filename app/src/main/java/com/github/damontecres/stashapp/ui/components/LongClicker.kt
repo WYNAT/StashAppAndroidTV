@@ -86,6 +86,7 @@ class DefaultLongClicker(
                     )
                 }
                 if (item is SlimSceneData) {
+                    val sceneFilter = filterAndPosition?.takeIf { it.filter.dataType == DataType.SCENE }
                     if (item.resume_time != null && item.resume_time > 0 && !alwaysStartFromBeginning) {
                         add(
                             DialogItem(
@@ -97,6 +98,8 @@ class DefaultLongClicker(
                                         item.id,
                                         item.resume_position!!,
                                         PlaybackMode.Choose,
+                                        sceneFilter?.filter,
+                                        sceneFilter?.position ?: -1,
                                     ),
                                 )
                             },
@@ -111,6 +114,8 @@ class DefaultLongClicker(
                                         item.id,
                                         0L,
                                         PlaybackMode.Choose,
+                                        sceneFilter?.filter,
+                                        sceneFilter?.position ?: -1,
                                     ),
                                 )
                             },
@@ -126,6 +131,8 @@ class DefaultLongClicker(
                                         item.id,
                                         0L,
                                         PlaybackMode.Choose,
+                                        sceneFilter?.filter,
+                                        sceneFilter?.position ?: -1,
                                     ),
                                 )
                             },
@@ -191,21 +198,25 @@ fun buildLongClickActionList(
         LongClickerAction<Any>(
             R.string.play_scene,
             { it is SlimSceneData && (it.resume_position == null || it.resume_position!! <= 0) },
-            { item, _ ->
+            { item, fp ->
                 item as SlimSceneData
-                nav.navigate(Destination.Playback(item.id, 0L, PlaybackMode.Choose))
+                val sceneFilter = fp?.takeIf { it.filter.dataType == DataType.SCENE }
+                nav.navigate(Destination.Playback(item.id, 0L, PlaybackMode.Choose, sceneFilter?.filter, sceneFilter?.position ?: -1))
             },
         ),
         LongClickerAction<Any>(
             R.string.resume,
             { it is SlimSceneData && (it.resume_position != null && it.resume_position!! > 0) },
-            { item, _ ->
+            { item, fp ->
                 item as SlimSceneData
+                val sceneFilter = fp?.takeIf { it.filter.dataType == DataType.SCENE }
                 nav.navigate(
                     Destination.Playback(
                         item.id,
                         item.resume_position ?: 0,
                         PlaybackMode.Choose,
+                        sceneFilter?.filter,
+                        sceneFilter?.position ?: -1,
                     ),
                 )
             },
@@ -213,9 +224,10 @@ fun buildLongClickActionList(
         LongClickerAction<Any>(
             R.string.restart,
             { it is SlimSceneData && (it.resume_position != null && it.resume_position!! > 0) },
-            { item, _ ->
+            { item, fp ->
                 item as SlimSceneData
-                nav.navigate(Destination.Playback(item.id, 0L, PlaybackMode.Choose))
+                val sceneFilter = fp?.takeIf { it.filter.dataType == DataType.SCENE }
+                nav.navigate(Destination.Playback(item.id, 0L, PlaybackMode.Choose, sceneFilter?.filter, sceneFilter?.position ?: -1))
             },
         ),
     )

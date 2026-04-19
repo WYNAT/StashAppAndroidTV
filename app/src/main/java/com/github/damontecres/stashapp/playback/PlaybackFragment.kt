@@ -542,6 +542,25 @@ abstract class PlaybackFragment(
                         }
                     }
 
+                    if (optionsButtonOptions.isPlayList) {
+                        val autoplayText =
+                            if (isAutoplayEnabled()) getString(R.string.autoplay_disable) else getString(R.string.autoplay_enable)
+                        add(autoplayText)
+                        callbacks[size - 1] = {
+                            val newValue = !isAutoplayEnabled()
+                            preferences
+                                .edit()
+                                .putBoolean(getString(R.string.pref_key_playlist_autoplay), newValue)
+                                .apply()
+                            Toast
+                                .makeText(
+                                    requireContext(),
+                                    if (newValue) getString(R.string.autoplay_enabled) else getString(R.string.autoplay_disabled),
+                                    Toast.LENGTH_SHORT,
+                                ).show()
+                        }
+                    }
+
                     if (preferences.getBoolean(getString(R.string.pref_key_video_filters), false)) {
                         if (addedVideoFilter) {
                             add("Hide Video Filters")
@@ -725,6 +744,11 @@ abstract class PlaybackFragment(
             StashExoPlayer.addListener(trackActivityListener!!)
         }
     }
+
+    protected fun isAutoplayEnabled(): Boolean =
+        PreferenceManager
+            .getDefaultSharedPreferences(requireContext())
+            .getBoolean(getString(R.string.pref_key_playlist_autoplay), true)
 
     data class OptionsButtonOptions(
         val dataType: DataType,

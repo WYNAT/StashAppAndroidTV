@@ -107,6 +107,16 @@ abstract class PlaylistFragment<T : Query.Data, D : StashData, C : Query.Data> :
                     prepare()
                     playWhenReady = true
                 }
+
+                override fun onMediaItemTransition(
+                    mediaItem: MediaItem?,
+                    reason: Int,
+                ) {
+                    if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO && !isAutoplayEnabled()) {
+                        pause()
+                        videoView.showController()
+                    }
+                }
             },
         )
         StashExoPlayer.addListener(PlaylistListener())
@@ -134,8 +144,8 @@ abstract class PlaylistFragment<T : Query.Data, D : StashData, C : Query.Data> :
         }
         maybeMuteAudio(requireContext(), false, player!!)
         player!!.prepare()
-        if (destination.position > 0) {
-            playIndex(destination.position)
+        if (destination.position > 0 || destination.startPosition > 0L) {
+            playIndex(destination.position, destination.startPosition)
         }
         player!!.play()
         totalCount = pagingSource.getCount()
@@ -181,12 +191,15 @@ abstract class PlaylistFragment<T : Query.Data, D : StashData, C : Query.Data> :
         }
     }
 
-    fun playIndex(index: Int) {
+    fun playIndex(
+        index: Int,
+        startPosition: Long = 0L,
+    ) {
         viewLifecycleOwner.lifecycleScope.launch(StashCoroutineExceptionHandler()) {
             val player = player!!
             Log.v(
                 TAG,
-                "index=$index, player.mediaItemCount=${player.mediaItemCount}",
+                "index=$index, startPosition=$startPosition, player.mediaItemCount=${player.mediaItemCount}",
             )
             // The play will ignore requests to play something not in the playlist
             // So check if the index is out of bounds and add pages until either the item is available or there are not more pages
@@ -210,7 +223,7 @@ abstract class PlaylistFragment<T : Query.Data, D : StashData, C : Query.Data> :
                 Log.v(TAG, "after fetch: player.mediaItemCount=${player.mediaItemCount}")
             }
             hidePlaylist()
-            player.seekTo(index, androidx.media3.common.C.TIME_UNSET)
+            player.seekTo(index, if (startPosition > 0L) startPosition else androidx.media3.common.C.TIME_UNSET)
         }
     }
 

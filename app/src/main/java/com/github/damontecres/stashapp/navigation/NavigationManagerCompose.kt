@@ -56,6 +56,21 @@ class NavigationManagerCompose(
     }
 
     override fun navigate(destination: Destination) {
+        // Redirect single-scene Playback with filter context to PlaylistPlaybackPage
+        if (destination is Destination.Playback &&
+            destination.filterArgs != null &&
+            destination.filterPosition >= 0
+        ) {
+            navigate(
+                Destination.Playlist(
+                    filterArgs = destination.filterArgs,
+                    position = destination.filterPosition,
+                    startPosition = destination.position,
+                ),
+            )
+            return
+        }
+
         val current = getCurrentFragment()
         if (destination == Destination.Pin) {
             // Enable so that backing out of the fragment will close the app
