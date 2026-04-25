@@ -285,7 +285,6 @@ class FilterParser(
         } else {
             null
         }
-*/
 
     fun convertToResolutionEnum(str: String): ResolutionEnum =
         when (str) {

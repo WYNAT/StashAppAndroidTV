@@ -554,15 +554,9 @@ fun filterSummary(
                 filterSummary(value)
             }
 
-<<<<<<< HEAD
-/*
-            is PHashDuplicationCriterionInput -> {
-=======
             is DuplicationCriterionInput -> {
->>>>>>> upstream/main
                 filterSummary(value)
             }
-*/
 
             is ResolutionCriterionInput -> {
                 filterSummary(value)

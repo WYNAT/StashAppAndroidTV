@@ -1,18 +1,42 @@
 package com.github.damontecres.stashapp.util
 
 import com.apollographql.apollo.api.Optional
+import com.github.damontecres.stashapp.api.type.CircumcisedEnum
+import com.github.damontecres.stashapp.api.type.CircumcisionCriterionInput
+import com.github.damontecres.stashapp.api.type.CriterionModifier
+import com.github.damontecres.stashapp.api.type.CustomFieldCriterionInput
+import com.github.damontecres.stashapp.api.type.DateCriterionInput
+import com.github.damontecres.stashapp.api.type.DuplicationCriterionInput
+import com.github.damontecres.stashapp.api.type.FileDuplicationCriterionInput
 import com.github.damontecres.stashapp.api.type.FileFilterType
+import com.github.damontecres.stashapp.api.type.FloatCriterionInput
 import com.github.damontecres.stashapp.api.type.FolderFilterType
 import com.github.damontecres.stashapp.api.type.GalleryFilterType
+import com.github.damontecres.stashapp.api.type.GenderCriterionInput
+import com.github.damontecres.stashapp.api.type.GenderEnum
 import com.github.damontecres.stashapp.api.type.GroupFilterType
+import com.github.damontecres.stashapp.api.type.HierarchicalMultiCriterionInput
 import com.github.damontecres.stashapp.api.type.ImageFileFilterInput
 import com.github.damontecres.stashapp.api.type.ImageFilterType
+import com.github.damontecres.stashapp.api.type.IntCriterionInput
 import com.github.damontecres.stashapp.api.type.MovieFilterType
+import com.github.damontecres.stashapp.api.type.MultiCriterionInput
+import com.github.damontecres.stashapp.api.type.OrientationCriterionInput
+import com.github.damontecres.stashapp.api.type.OrientationEnum
 import com.github.damontecres.stashapp.api.type.PerformerFilterType
+import com.github.damontecres.stashapp.api.type.PhashDistanceCriterionInput
+import com.github.damontecres.stashapp.api.type.ResolutionCriterionInput
+import com.github.damontecres.stashapp.api.type.ResolutionEnum
 import com.github.damontecres.stashapp.api.type.SceneFilterType
 import com.github.damontecres.stashapp.api.type.SceneMarkerFilterType
+import com.github.damontecres.stashapp.api.type.SortDirectionEnum
+import com.github.damontecres.stashapp.api.type.StashDataFilter
+import com.github.damontecres.stashapp.api.type.StashIDCriterionInput
+import com.github.damontecres.stashapp.api.type.StashIDsCriterionInput
+import com.github.damontecres.stashapp.api.type.StringCriterionInput
 import com.github.damontecres.stashapp.api.type.StudioFilterType
 import com.github.damontecres.stashapp.api.type.TagFilterType
+import com.github.damontecres.stashapp.api.type.TimestampCriterionInput
 import com.github.damontecres.stashapp.api.type.VideoFileFilterInput
 
 fun FilterParser.convertPerformerFilterType(f: Any?): PerformerFilterType? =
