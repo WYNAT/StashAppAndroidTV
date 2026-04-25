@@ -108,6 +108,7 @@ class MainPageViewModel : ViewModel() {
 
     private val _serverStats = MutableLiveData<StatisticsQuery.Stats?>()
     val serverStats: LiveData<StatisticsQuery.Stats?> = _serverStats
+    private var lastStatsUpdate: Long = 0
 
     fun init(
         context: Context,
@@ -116,8 +117,9 @@ class MainPageViewModel : ViewModel() {
     ) {
         this.server = server
         viewModelScope.launchDefault(LoggingCoroutineExceptionHandler(server, viewModelScope)) {
-            val queryEngine = QueryEngine(server)
+            val queryEngine = server.queryEngine
             val filterParser = FilterParser(server.version)
+            @Suppress("UNCHECKED_CAST")
             val frontPageContent =
                 server.serverPreferences.uiConfiguration?.getCaseInsensitive("frontPageContent") as List<Map<String, *>>?
             if (frontPageContent != null) {
@@ -131,15 +133,22 @@ class MainPageViewModel : ViewModel() {
                     )
                 val jobs = frontPageParser.parse(frontPageContent)
 
-                jobs.forEach { job ->
-                    try {
-                        job.await().let { row ->
-                            if (row is FrontPageParser.FrontPageRow.Success) {
-                                frontPageRows.add(row)
+                jobs.forEachIndexed { index, job ->
+                    viewModelScope.launchDefault {
+                        try {
+                            job.await().let { row ->
+                                if (row is FrontPageParser.FrontPageRow.Success) {
+                                    // Add rows as they finish, but with a tiny staggered delay
+                                    // to allow the UI to breathe between row insertions
+                                    if (index > 0) {
+                                        kotlinx.coroutines.delay((index * 50).toLong())
+                                    }
+                                    frontPageRows.add(row)
+                                }
                             }
+                        } catch (ex: Exception) {
+                            Log.e(TAG, "Error fetching row data", ex)
                         }
-                    } catch (ex: Exception) {
-                        Log.e(TAG, "Error fetching row data", ex)
                     }
                 }
             }
@@ -165,10 +174,13 @@ class MainPageViewModel : ViewModel() {
         }
     }
 
-    fun updateStatistics() {
+    fun updateStatistics(force: Boolean = false) {
+        if (!force && System.currentTimeMillis() - lastStatsUpdate < 60000) {
+            return
+        }
         viewModelScope.launch(StashCoroutineExceptionHandler()) {
-            val queryEngine = QueryEngine(server)
-            _serverStats.value = queryEngine.executeQuery(StatisticsQuery()).data?.stats
+            _serverStats.value = server.queryEngine.executeQuery(StatisticsQuery()).data?.stats
+            lastStatsUpdate = System.currentTimeMillis()
         }
     }
 }
@@ -232,6 +244,14 @@ fun HomePage(
     modifier: Modifier = Modifier,
 ) {
     var focusedItem by remember { mutableStateOf<Any?>(null) }
+    var debouncedFocusedItem by remember { mutableStateOf<Any?>(null) }
+
+    LaunchedEffect(focusedItem) {
+        // Debounce background and header updates to prevent lag during fast scrolling
+        kotlinx.coroutines.delay(150)
+        debouncedFocusedItem = focusedItem
+    }
+
     val focusRequester = remember { FocusRequester() }
     var focusedIndex by rememberSaveable { mutableStateOf(RowColumn(0, 0)) }
     var focusedRow by rememberSaveable { mutableIntStateOf(0) }
@@ -247,7 +267,7 @@ fun HomePage(
             modifier
                 .fillMaxSize(),
     ) {
-        focusedItem?.let { item ->
+        debouncedFocusedItem?.let { item ->
             val imageUrl =
                 when (item) {
                     is SlimSceneData -> item.paths.screenshot
@@ -267,6 +287,7 @@ fun HomePage(
                         ImageRequest
                             .Builder(LocalContext.current)
                             .data(imageUrl)
+                            .size(800) // Optimization: Don't load full resolution for background
                             .transitionFactory(CrossFadeFactory(250.milliseconds))
                             .build(),
                     contentDescription = null,
@@ -299,16 +320,6 @@ fun HomePage(
                                         endX = 0f,
                                     ),
                                 )
-//                                drawLine(
-//                                    color = Color.Red,
-//                                    start = Offset(x = 0f, y = size.height * .5f),
-//                                    end = Offset(x = size.width, y = size.height),
-//                                )
-//                                drawLine(
-//                                    color = Color.Red,
-//                                    start = Offset.Zero,
-//                                    end = Offset(x = size.width, y = size.height),
-//                                )
                             },
                 )
             }
@@ -319,7 +330,7 @@ fun HomePage(
                     .fillMaxSize()
                     .padding(12.dp),
         ) {
-            focusedItem?.let { item ->
+            debouncedFocusedItem?.let { item ->
                 MainPageHeader(
                     item = item,
                     uiConfig = uiConfig,

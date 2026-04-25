@@ -82,19 +82,22 @@ class QueryEngine(
         withContext(Dispatchers.IO) {
             val queryName = query.operation.name()
             val id = QUERY_ID.getAndIncrement()
-            Log.v(TAG, "executeQuery $id $queryName")
+            Log.v(TAG, "executeQuery $id $queryName started")
+            val startTime = System.currentTimeMillis()
 
             val response = query.execute()
+            val duration = System.currentTimeMillis() - startTime
             if (response.data != null) {
-                Log.v(TAG, "executeQuery $id $queryName successful")
+                Log.v(TAG, "executeQuery $id $queryName successful in ${duration}ms")
                 return@withContext response
             } else if (response.exception != null) {
+                Log.e(TAG, "executeQuery $id $queryName failed in ${duration}ms", response.exception)
                 throw createException(id, queryName, response.exception!!) { msg, ex ->
                     QueryException(id, queryName, msg, ex)
                 }
             } else {
                 val errorMessages = response.errors!!.joinToString("\n") { it.message }
-                Log.e(TAG, "Errors in $id $queryName: ${response.errors}")
+                Log.e(TAG, "Errors in $id $queryName after ${duration}ms: ${response.errors}")
                 throw QueryException(id, queryName, "Error in $queryName: $errorMessages")
             }
         }
@@ -119,6 +122,7 @@ class QueryEngine(
             executeQuery(query).data?.findScenes?.scenes?.map {
                 it.slimSceneData
             }
+        Log.d(TAG, "findScenes: ${scenes?.size ?: 0} results")
         return scenes.orEmpty()
     }
 

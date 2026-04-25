@@ -110,6 +110,7 @@ class FrontPageParser(
                         ?: return@withContext CompletableDeferred(FrontPageRow.NotSupported)
                 val job =
                     async {
+                        val startTime = System.currentTimeMillis()
                         try {
                             val direction = frontPageFilter["direction"] as String?
 
@@ -132,9 +133,10 @@ class FrontPageParser(
                                     customFilter.findFilter!!.toFindFilterType(1, pageSize),
                                     useRandom = false,
                                 )
+                            Log.d(TAG, "addCustomFilterRow '$description' finished in ${System.currentTimeMillis() - startTime}ms")
                             FrontPageRow.Success(description, customFilter, data)
                         } catch (@Suppress("TooGenericExceptionCaught") ex: Exception) {
-                            Log.e(TAG, "Exception in addCustomFilterRow", ex)
+                            Log.e(TAG, "Exception in addCustomFilterRow '$description' after ${System.currentTimeMillis() - startTime}ms", ex)
                             FrontPageRow.Error
                         }
                     }
@@ -149,6 +151,7 @@ class FrontPageParser(
         withContext(Dispatchers.IO) {
             return@withContext async {
                 val filterId = frontPageFilter.getCaseInsensitive("savedFilterId")
+                val startTime = System.currentTimeMillis()
                 try {
                     val result = queryEngine.getSavedFilter(filterId.toString())
                     if (result != null) {
@@ -240,13 +243,14 @@ class FrontPageParser(
                                     )
                                 }
                             }
+                        Log.d(TAG, "addSavedFilterRow '${result.name}' ($filterId) finished in ${System.currentTimeMillis() - startTime}ms")
                         FrontPageRow.Success(result.name, filter, data)
                     } else {
-                        Log.w(TAG, "SavedFilter does not exist")
+                        Log.w(TAG, "SavedFilter $filterId does not exist")
                         FrontPageRow.Error
                     }
                 } catch (@Suppress("TooGenericExceptionCaught") ex: Exception) {
-                    Log.e(TAG, "Exception in addSavedFilterRow filterId=$filterId", ex)
+                    Log.e(TAG, "Exception in addSavedFilterRow filterId=$filterId after ${System.currentTimeMillis() - startTime}ms", ex)
                     FrontPageRow.Error
                 }
             }

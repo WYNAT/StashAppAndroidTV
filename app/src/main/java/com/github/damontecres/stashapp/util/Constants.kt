@@ -1065,24 +1065,31 @@ fun Optional.Companion.presentIfNotNullOrBlank(value: String?): Optional<String>
 fun maybeStartPlayback(
     context: Context,
     item: Any,
+    filterAndPosition: FilterAndPosition? = null,
 ) {
     when (item) {
         is SlimSceneData -> {
+            val sceneFilter = filterAndPosition?.takeIf { it.filter.dataType == DataType.SCENE }
             StashApplication.navigationManager.navigate(
                 Destination.Playback(
                     item.id,
                     item.resume_position ?: 0L,
                     PlaybackMode.Choose,
+                    sceneFilter?.filter,
+                    sceneFilter?.position ?: -1,
                 ),
             )
         }
 
         is MarkerData -> {
+            val markerFilter = filterAndPosition?.takeIf { it.filter.dataType == DataType.MARKER }
             StashApplication.navigationManager.navigate(
                 Destination.Playback(
                     item.scene.minimalSceneData.id,
                     (item.seconds * 1000).toLong(),
                     PlaybackMode.Choose,
+                    markerFilter?.filter,
+                    markerFilter?.position ?: -1,
                 ),
             )
         }

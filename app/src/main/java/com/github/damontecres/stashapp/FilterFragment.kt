@@ -77,7 +77,12 @@ class FilterFragment :
         dataType = startingFilter.dataType
         Log.d(TAG, "onCreate: dataType=$dataType")
 
-        val presenterSelector = StashPresenter.defaultClassPresenterSelector()
+        val presenterSelector = StashPresenter.defaultClassPresenterSelector {
+            FilterAndPosition(
+                stashGridViewModel.filterArgs.value!!,
+                stashGridViewModel.currentPosition.value ?: -1,
+            )
+        }
         addExtraGridLongClicks(presenterSelector, dataType) {
             FilterAndPosition(
                 stashGridViewModel.filterArgs.value!!,

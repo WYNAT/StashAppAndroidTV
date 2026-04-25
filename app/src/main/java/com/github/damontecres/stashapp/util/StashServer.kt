@@ -7,6 +7,8 @@ import androidx.preference.PreferenceManager
 import com.github.damontecres.stashapp.SettingsFragment
 import com.github.damontecres.stashapp.StashApplication
 import com.github.damontecres.stashapp.StashExoPlayer
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -16,6 +18,8 @@ data class StashServer(
     val url: String,
     val apiKey: String?,
 ) {
+    private val updateMutex = Mutex()
+    private var lastUpdate: Long = 0
     /**
      * The server side preferences
      *
@@ -36,14 +40,23 @@ data class StashServer(
     val okHttpClient by lazy { StashClient.createOkHttpClient(this) }
     val apolloClient by lazy { StashClient.createApolloClient(this) }
     val streamingOkHttpClient by lazy { okHttpClient.newBuilder().cache(null).build() }
+    val queryEngine by lazy { QueryEngine(this) }
 
     /**
      * Query the server for preferences
      */
-    suspend fun updateServerPrefs(): ServerPreferences {
-        val queryEngine = QueryEngine(this)
-        val result = queryEngine.getServerConfiguration()
-        serverPreferences.updatePreferences(result)
+    suspend fun updateServerPrefs(force: Boolean = false): ServerPreferences {
+        if (!force && System.currentTimeMillis() - lastUpdate < 60000 && hasCachedPreferences()) {
+            return serverPreferences
+        }
+        updateMutex.withLock {
+            if (!force && System.currentTimeMillis() - lastUpdate < 60000 && hasCachedPreferences()) {
+                return serverPreferences
+            }
+            val result = queryEngine.getServerConfiguration()
+            serverPreferences.updatePreferences(result)
+            lastUpdate = System.currentTimeMillis()
+        }
         return serverPreferences
     }
 

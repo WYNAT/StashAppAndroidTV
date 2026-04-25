@@ -63,7 +63,7 @@ android {
         targetSdk = 36
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         versionCode = gitTags.trim().lines().size + 1
-        versionName = "0.8.26"
+        versionName = "0.8.27"
         vectorDrawables.useSupportLibrary = true
     }
     signingConfigs {

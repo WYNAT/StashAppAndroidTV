@@ -319,7 +319,9 @@ class MainFragment :
                     row.adapter.get(it.column)
                 }
             if (item != null && requireActivity().currentFocus is StashImageCardView) {
-                maybeStartPlayback(requireContext(), item)
+                val position = currentPosition!!
+                val filter = filterList[position.row]
+                maybeStartPlayback(requireContext(), item, FilterAndPosition(filter, position.column))
             }
         }
         return super.onKeyUp(keyCode, event)

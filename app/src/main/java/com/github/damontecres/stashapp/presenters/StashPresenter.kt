@@ -24,6 +24,7 @@ import com.github.damontecres.stashapp.api.fragment.MarkerData
 import com.github.damontecres.stashapp.api.fragment.PerformerData
 import com.github.damontecres.stashapp.api.fragment.SlimSceneData
 import com.github.damontecres.stashapp.api.fragment.StudioData
+import com.github.damontecres.stashapp.navigation.FilterAndPosition
 import com.github.damontecres.stashapp.api.fragment.TagData
 import com.github.damontecres.stashapp.data.OCounter
 import com.github.damontecres.stashapp.suppliers.FilterArgs
@@ -235,10 +236,12 @@ abstract class StashPresenter<T>(
     companion object {
         private const val TAG = "StashPresenter"
 
-        fun defaultClassPresenterSelector(): ClassPresenterSelector =
+        fun defaultClassPresenterSelector(
+            filterLookup: ((SlimSceneData) -> FilterAndPosition?)? = null,
+        ): ClassPresenterSelector =
             ClassPresenterSelector()
                 .addClassPresenter(PerformerData::class.java, PerformerPresenter())
-                .addClassPresenter(SlimSceneData::class.java, ScenePresenter())
+                .addClassPresenter(SlimSceneData::class.java, ScenePresenter(filterLookup = filterLookup))
                 .addClassPresenter(StudioData::class.java, StudioPresenter())
                 .addClassPresenter(TagData::class.java, TagPresenter())
                 .addClassPresenter(GroupData::class.java, GroupPresenter())

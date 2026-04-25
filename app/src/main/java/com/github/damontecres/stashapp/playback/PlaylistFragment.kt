@@ -284,7 +284,7 @@ abstract class PlaylistFragment<T : Query.Data, D : StashData, C : Query.Data> :
                 val count = player!!.mediaItemCount
                 // TODO: https://medium.com/@nicholas.rose/exoplayer-playlist-diffing-f8fcd4b2ab7c
                 // If there are only a few items left in the playlist but there are more server-side, fetch the next page
-                if (count - player!!.currentMediaItemIndex <= 5) {
+                if (count - player!!.currentMediaItemIndex <= PAGE_SIZE / 2) {
                     Log.v(TAG, "Too few items in playlist")
                     viewLifecycleOwner.lifecycleScope.launch(StashCoroutineExceptionHandler()) {
                         // If the user skips a lot of videos very quickly, the same page might be fetched multiple times

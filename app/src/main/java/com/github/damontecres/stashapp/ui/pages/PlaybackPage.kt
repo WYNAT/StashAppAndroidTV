@@ -175,8 +175,8 @@ private fun adjustFilter(filter: FilterArgs): FilterArgs =
     }
 
 const val MAX_PLAYLIST_SIZE = 50
-const val PLAYLIST_THRESHOLD = 10
-const val PLAYLIST_PREFETCH = 15
+const val PLAYLIST_THRESHOLD = 15
+const val PLAYLIST_PREFETCH = 25
 
 @Composable
 fun PlaylistPlaybackPage(

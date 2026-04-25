@@ -627,7 +627,7 @@ class StashDataGridFragment :
             val position = selectedPosition
             val item = pagingAdapter?.get(position)
             if (item != null) {
-                maybeStartPlayback(requireContext(), item)
+                maybeStartPlayback(requireContext(), item, FilterAndPosition(viewModel.filterArgs.value!!, selectedPosition))
                 return true
             } else {
                 return false

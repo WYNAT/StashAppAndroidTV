@@ -14,10 +14,12 @@ import com.github.damontecres.stashapp.util.resolutionName
 import com.github.damontecres.stashapp.util.resume_position
 import com.github.damontecres.stashapp.util.titleOrFilename
 import com.github.damontecres.stashapp.views.durationToString
+import com.github.damontecres.stashapp.navigation.FilterAndPosition
 import java.util.EnumMap
 
 class ScenePresenter(
     callback: LongClickCallBack<SlimSceneData>? = null,
+    private val filterLookup: ((SlimSceneData) -> FilterAndPosition?)? = null,
 ) : StashPresenter<SlimSceneData>(callback) {
     override fun doOnBindViewHolder(
         cardView: StashImageCardView,
@@ -86,33 +88,42 @@ class ScenePresenter(
                 PopUpItem(2, "Play Scene"),
                 { it.resume_position == null || it.resume_position!! <= 0 },
             ) { _, item ->
+                val validFilter = filterLookup?.invoke(item)?.takeIf { it.filter.dataType == DataType.SCENE }
                 StashApplication.navigationManager.navigate(
                     Destination.Playback(
                         item.id,
                         0L,
                         PlaybackMode.Choose,
+                        validFilter?.filter,
+                        validFilter?.position ?: -1,
                     ),
                 )
             }.addAction(
                 PopUpItem(3, "Resume Scene"),
                 { it.resume_position != null && it.resume_position!! > 0 },
             ) { _, item ->
+                val validFilter = filterLookup?.invoke(item)?.takeIf { it.filter.dataType == DataType.SCENE }
                 StashApplication.navigationManager.navigate(
                     Destination.Playback(
                         item.id,
                         item.resume_position ?: 0L,
                         PlaybackMode.Choose,
+                        validFilter?.filter,
+                        validFilter?.position ?: -1,
                     ),
                 )
             }.addAction(
                 PopUpItem(4, "Restart Scene"),
                 { it.resume_position != null && it.resume_position!! > 0 },
             ) { _, item ->
+                val validFilter = filterLookup?.invoke(item)?.takeIf { it.filter.dataType == DataType.SCENE }
                 StashApplication.navigationManager.navigate(
                     Destination.Playback(
                         item.id,
                         0L,
                         PlaybackMode.Choose,
+                        validFilter?.filter,
+                        validFilter?.position ?: -1,
                     ),
                 )
             }
