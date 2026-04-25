@@ -161,6 +161,7 @@ val advancedPreferences =
                 StashPreference.SavePlayHistory,
                 StashPreference.DPadSkipping,
                 StashPreference.DPadSkipIndicator,
+                StashPreference.MobileTouchGestures,
                 StashPreference.ControllerTimeout,
                 StashPreference.StartPlaybackMuted,
                 StashPreference.PlaybackStreamChoice,
