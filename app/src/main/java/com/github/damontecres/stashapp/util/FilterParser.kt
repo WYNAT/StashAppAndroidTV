@@ -2,7 +2,7 @@ package com.github.damontecres.stashapp.util
 
 import com.apollographql.apollo.api.Optional
 import com.github.damontecres.stashapp.api.type.CircumcisionCriterionInput
-import com.github.damontecres.stashapp.api.type.CircumisedEnum
+import com.github.damontecres.stashapp.api.type.CircumcisedEnum
 import com.github.damontecres.stashapp.api.type.CriterionModifier
 import com.github.damontecres.stashapp.api.type.CustomFieldCriterionInput
 import com.github.damontecres.stashapp.api.type.DateCriterionInput
@@ -14,7 +14,7 @@ import com.github.damontecres.stashapp.api.type.IntCriterionInput
 import com.github.damontecres.stashapp.api.type.MultiCriterionInput
 import com.github.damontecres.stashapp.api.type.OrientationCriterionInput
 import com.github.damontecres.stashapp.api.type.OrientationEnum
-import com.github.damontecres.stashapp.api.type.PHashDuplicationCriterionInput
+// import com.github.damontecres.stashapp.api.type.PHashDuplicationCriterionInput
 import com.github.damontecres.stashapp.api.type.PhashDistanceCriterionInput
 import com.github.damontecres.stashapp.api.type.ResolutionCriterionInput
 import com.github.damontecres.stashapp.api.type.ResolutionEnum
@@ -173,7 +173,7 @@ class FilterParser(
                 value =
                     Optional.presentIfNotNull(
                         valueList
-                            ?.map { CircumisedEnum.valueOf(it.uppercase()) }
+                            ?.map { CircumcisedEnum.valueOf(it.uppercase()) }
                             ?.toList(),
                     ),
                 modifier = CriterionModifier.valueOf(it["modifier"]!! as String),
@@ -245,6 +245,7 @@ class FilterParser(
             null
         }
 
+/*
     fun convertPHashDuplicationCriterionInput(it: Map<String, *>?): PHashDuplicationCriterionInput? =
         if (it != null) {
             PHashDuplicationCriterionInput(
@@ -254,6 +255,7 @@ class FilterParser(
         } else {
             null
         }
+*/
 
     fun convertToResolutionEnum(str: String): ResolutionEnum =
         when (str) {

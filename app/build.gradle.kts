@@ -1,9 +1,15 @@
 
-import com.android.build.gradle.internal.cxx.io.writeTextIfDifferent
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.google.protobuf.gradle.id
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Base64
+import java.io.File
+
+fun File.writeTextIfDifferent(text: String) {
+    if (!exists() || readText() != text) {
+        writeText(text)
+    }
+}
 
 val isCI = if (System.getenv("CI") != null) System.getenv("CI").toBoolean() else false
 val ffmpegModuleExists = project.file("libs/lib-decoder-ffmpeg-release.aar").exists()

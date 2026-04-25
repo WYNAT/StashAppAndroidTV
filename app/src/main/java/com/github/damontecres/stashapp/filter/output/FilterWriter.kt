@@ -11,7 +11,7 @@ import com.github.damontecres.stashapp.api.type.HierarchicalMultiCriterionInput
 import com.github.damontecres.stashapp.api.type.IntCriterionInput
 import com.github.damontecres.stashapp.api.type.MultiCriterionInput
 import com.github.damontecres.stashapp.api.type.OrientationCriterionInput
-import com.github.damontecres.stashapp.api.type.PHashDuplicationCriterionInput
+// import com.github.damontecres.stashapp.api.type.PHashDuplicationCriterionInput
 import com.github.damontecres.stashapp.api.type.PhashDistanceCriterionInput
 import com.github.damontecres.stashapp.api.type.ResolutionCriterionInput
 import com.github.damontecres.stashapp.api.type.StashDataFilter
@@ -62,9 +62,11 @@ class FilterWriter(
                                         o.toMap()
                                     }
 
+/*
                                     is PHashDuplicationCriterionInput -> {
                                         o.toMap()
                                     }
+*/
 
                                     is ResolutionCriterionInput -> {
                                         o.toMap()
