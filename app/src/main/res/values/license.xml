@@ -2,7 +2,7 @@
 <resources>
     <string name="license_separator" translatable="false">\n\n================================================================================\n\n</string>
     <string-array name="stash_license_attributions" translatable="false">
-        <item>StashAppAndroidTV is distributed under AGPL-3.\nSource available at https://github.com/damontecres/StashAppAndroidTV</item>
+        <item>StashAppAndroidTV is distributed under AGPL-3.\nSource available at https://github.com/WYNAT/StashAppAndroidTV</item>
         <item>Parts of https://github.com/stashapp/stash included under AGPL-3</item>
     </string-array>
 </resources>

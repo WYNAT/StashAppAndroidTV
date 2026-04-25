@@ -7,7 +7,7 @@ Please be sure to consider how heavily your contribution impacts the maintainabi
 Please make sure that you've considered the following before you submit your Pull Requests as ready for merging:
 * Your code is written in Kotlin and follows the [Kotlin Coding Conventions](https://kotlinlang.org/docs/coding-conventions.html) and [Android Kotlin Style Guide](https://developer.android.com/kotlin/style-guide). If Java is used, please explain in your pull request why Java is required.
 * You have run code linters to make sure that the code is readable.
-* You have read through existing/merged [pull requests](https://github.com/damontecres/StashAppAndroidTV/pulls) and open/closed [issues](https://github.com/damontecres/StashAppAndroidTV/issues) to make sure that this contribution is required and isn't a duplicate.
+* You have read through existing/merged [pull requests](https://github.com/WYNAT/StashAppAndroidTV/pulls) and open/closed [issues](https://github.com/WYNAT/StashAppAndroidTV/issues) to make sure that this contribution is required and isn't a duplicate.
 * You commented adequately your code to make it understandable for other developers.
 
 ## Legal Agreements

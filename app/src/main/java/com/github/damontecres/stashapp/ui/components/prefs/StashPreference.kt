@@ -1295,7 +1295,7 @@ sealed interface StashPreference<T> {
             StashStringPreference(
                 title = R.string.update_url,
                 prefKey = R.string.pref_key_update_url,
-                defaultValue = "https://api.github.com/repos/damontecres/StashAppAndroidTV/releases/latest",
+                defaultValue = "https://api.github.com/repos/WYNAT/StashAppAndroidTV/releases/latest",
                 getter = { it.updatePreferences.updateUrl },
                 setter = { prefs, value ->
                     prefs.updateUpdatePreferences { updateUrl = value }

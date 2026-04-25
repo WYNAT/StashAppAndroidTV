@@ -1,6 +1,6 @@
 # Stash App for Android TV
 
-This is an Android TV app for browsing images and playing scenes from a [Stash](https://github.com/stashapp/stash) server. Many devices running Android TV are supported, including Amazon Fire TV devices. See [device compatibility](https://github.com/damontecres/StashAppAndroidTV/wiki/Device-Compatibility) for more information.
+This is an Android TV app for browsing images and playing scenes from a [Stash](https://github.com/stashapp/stash) server. Many devices running Android TV are supported, including Amazon Fire TV devices. See [device compatibility](https://github.com/WYNAT/StashAppAndroidTV/wiki/Device-Compatibility) for more information.
 
 The app supports browsing, searching, and filtering just about everything including scenes, images, performers, tags, etc. The app also supports video hardware decoding when available so your server can transcode less.
 
@@ -28,7 +28,7 @@ This fork introduces deep, native integration for **The Handy** hardware directl
 
 Make sure your Stash server is running and that you can access it over the network (not `localhost`).
 
-Check the [Tips & Tricks](https://github.com/damontecres/StashAppAndroidTV/wiki/Tips-&-Tricks) page for some common issues and solutions!
+Check the [Tips & Tricks](https://github.com/WYNAT/StashAppAndroidTV/wiki/Tips-&-Tricks) page for some common issues and solutions!
 
 ### Installation
 
@@ -39,12 +39,12 @@ Check the [Tips & Tricks](https://github.com/damontecres/StashAppAndroidTV/wiki/
     - https://www.aftvnews.com/how-to-enable-apps-from-unknown-sources-on-an-amazon-fire-tv-or-fire-tv-stick/
 1. Install the APK on your Android TV device with one of these options:
     - Install a browser program such as [Downloader](https://www.aftvnews.com/downloader/), use it to get the latest apk with short code `745800` or URL: https://aftv.news/745800
-    - Download the latest APK release from the [releases page](https://github.com/damontecres/StashAppAndroidTV/releases/latest) or https://aftv.news/745800
+    - Download the latest APK release from the [releases page](https://github.com/WYNAT/StashAppAndroidTV/releases/latest) or https://aftv.news/745800
         - Put the APK on an SD Card/USB stick/network share and use a file manager app from the Google Play Store / Amazon AppStore (e.g. `FX File Explorer`). Android's preinstalled file manager probably will not work!
         - Use `Send files to TV` from the Google Play Store on your phone & TV
         - (Expert) Use [ADB](https://developer.android.com/studio/command-line/adb) to install the APK from your computer ([guide](https://fossbytes.com/side-load-apps-android-tv/#h-how-to-sideload-apps-on-your-android-tv-using-adb))
 1. [Configure the app](#configuration)
-1. Optionally, install the [StashAppAndroidTV Companion](https://github.com/damontecres/StashAppAndroidTV-Companion) plugin on your server to enable additional features
+1. Optionally, install the [StashAppAndroidTV Companion](https://github.com/WYNAT/StashAppAndroidTV-Companion) plugin on your server to enable additional features
     - Search for `StashAppAndroidTV Companion` on your server's Settings->Plugins page
     - Alternatively, trigger an install from the Android TV app in `Settings->Advanced->Install companion plugin`
 
@@ -66,7 +66,7 @@ The first time you open the app, follow the prompts to configure the app to conn
     1. Use your phone to browse to your Stash server and copy the API Key from the Settings->Security page (e.g. http://192.168.1.122:9999/settings?tab=security)
     2. Use your phone's [virtual remote control](https://support.google.com/chromecast/answer/11221499) or the `Amazon Fire TV` app to paste the API Key into the TV app
     3. You can also use your username and password instead. After entering your username and password, the app will automatically retrieve (or generate) the API Key from the server.
-3. If you have trouble submitting the URL or API Key using the virtual remote control, [see some tips here](https://github.com/damontecres/StashAppAndroidTV/wiki/Tips-&-Tricks#i-cant-submit-the-server-url-when-using-a-remote-phone-app)
+3. If you have trouble submitting the URL or API Key using the virtual remote control, [see some tips here](https://github.com/WYNAT/StashAppAndroidTV/wiki/Tips-&-Tricks#i-cant-submit-the-server-url-when-using-a-remote-phone-app)
 
 #### Multiple servers
 
@@ -86,11 +86,11 @@ The app supports many devices running Android TV OS, such as the NVIDIA Shield, 
 
 It also supports Android phones and tablets, but the UI is not fully optimized for touch input.
 
-See [Device Compatibility](https://github.com/damontecres/StashAppAndroidTV/wiki/Device-Compatibility) for more information.
+See [Device Compatibility](https://github.com/WYNAT/StashAppAndroidTV/wiki/Device-Compatibility) for more information.
 
 ## Companion plugin
 
-The [StashAppAndroidTV Companion](https://github.com/damontecres/StashAppAndroidTV-Companion) plugin enables additional features in the app. It is not required to use the app, but it is recommended especially if you run into issues.
+The [StashAppAndroidTV Companion](https://github.com/WYNAT/StashAppAndroidTV-Companion) plugin enables additional features in the app. It is not required to use the app, but it is recommended especially if you run into issues.
 
 Currently, the plugin only supports receiving crash reports and logs from the app. But, this can help diagnose issues and improve the app.
 

@@ -130,7 +130,7 @@ data class Version(
         /**
          * Checks if the given server and app versions are compatible
          *
-         * Versions are offset by minor version 22: https://github.com/damontecres/StashAppAndroidTV/discussions/308
+         * Versions are offset by minor version 22: https://github.com/WYNAT/StashAppAndroidTV/discussions/308
          */
         fun isServerSupportedByAppVersion(
             serverVersion: Version,

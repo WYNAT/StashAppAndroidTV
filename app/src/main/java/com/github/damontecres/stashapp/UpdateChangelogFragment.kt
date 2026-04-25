@@ -19,7 +19,7 @@ class UpdateChangelogFragment : Fragment(R.layout.changelog) {
             "# ${release.version}\n\n${release.body}"
                 // Convert PR urls to number
                 .replace(
-                    Regex("https://github.com/damontecres/StashAppAndroidTV/pull/(\\d+)"),
+                    Regex("https://github.com/WYNAT/StashAppAndroidTV/pull/(\\d+)"),
                     "#$1",
                 )
                 // Remove the last line for full changelog since its just a link
