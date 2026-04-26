@@ -36,6 +36,7 @@ This document serves as a guide for AI agents and developers working on this pro
 4.  **Documentation Obligation:** Any change to the architecture or new features (like Funscript) must be documented in `DOCUMENTATION.md` at the same time.
 5.  **Hardware Security:** API keys (such as the Handy key) must never appear in logs or commits (use Android Preferences).
 6.  **Compilation:** For compilation, always use the following command and overwrite the file: `.\gradlew.bat compileDebugKotlin > gradle_out.txt 2>&1`
+7.  **Verification Mandate:** Unit tests and a full build test (`./gradlew testDebugUnitTest`) MUST be performed after every implementation to ensure stability and prevent regressions across both UI stacks.
 
 ## Coding Best Practices
 
@@ -67,6 +68,8 @@ Before marking a task as completed, check:
 - [ ] Has the change been implemented in the Leanback path (Fragments/Presenters)?
 - [ ] Does the logic (API, ViewModel, Utils) use shared classes to avoid divergence?
 - [ ] Do visual elements (icons, labels) look identical in both UIs?
+- [ ] Have all Unit Tests passed (`./gradlew testDebugUnitTest`)?
+- [ ] Has the project been successfully built (Build Test)?
 
 ## Helpful Entry Points for Agents
 *   `RootActivity.kt`: Entry point of the app (Routing between Old/New UI).
