@@ -17,7 +17,8 @@ import java.util.concurrent.TimeUnit
 
 object HandyManager {
     private const val TAG = "HandyManager"
-    private const val BASE_URL = "https://www.handyfeeling.com/api/handy/v2"
+    internal var BASE_URL = "https://www.handyfeeling.com/api/handy/v2"
+    internal var HOSTING_URL = "https://www.handyfeeling.com/api/hosting/v2"
 
     private const val TIMEOUT_SECONDS = 30L
     private const val HSSP_MODE = 1
@@ -29,7 +30,7 @@ object HandyManager {
     private const val TEST_DELAY_ONE_SECOND = 1000L
     private const val ERROR_CODE_UNSUPPORTED_PROTOCOL = 4003
 
-    private val client = OkHttpClient.Builder()
+    internal var client = OkHttpClient.Builder()
         .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -303,7 +304,7 @@ object HandyManager {
                 .build()
 
             val uploadRequest = Request.Builder()
-                .url("https://www.handyfeeling.com/api/hosting/v2/upload")
+                .url("$HOSTING_URL/upload")
                 .post(multipartBody)
                 .build()
 

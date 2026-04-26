@@ -158,7 +158,7 @@ class UpdateChecker {
                             Log.w(TAG, "Update version parsing failed. name=$name")
                         }
                     } else {
-                        Log.w(TAG, "Update check failed: ${it.message}")
+                        Log.w(TAG, "Update check failed: code=${it.code} message=${it.message}")
                     }
                     return@use null
                 }

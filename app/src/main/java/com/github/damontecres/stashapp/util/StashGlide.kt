@@ -33,14 +33,14 @@ class StashGlide private constructor() {
                     .with(context)
                     .load(url)
                     .diskCacheStrategy(DiskCacheStrategy.DATA)
-                    .skipMemoryCache(true)
+                    .skipMemoryCache(false)
                     .signature(ObjectKey(System.currentTimeMillis()))
             } else {
                 Glide
                     .with(context)
                     .load(url)
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true)
+                    .skipMemoryCache(false)
             }
 
         fun with(
@@ -57,7 +57,7 @@ class StashGlide private constructor() {
                 .with(context)
                 .load(url)
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .skipMemoryCache(true)
+                .skipMemoryCache(false)
 
         fun with(
             context: Context,
@@ -75,7 +75,7 @@ class StashGlide private constructor() {
                     .asBitmap()
                     .load(createGlideUrl(url, context))
                     .diskCacheStrategy(DiskCacheStrategy.DATA)
-                    .skipMemoryCache(true)
+                    .skipMemoryCache(false)
                     .signature(ObjectKey(System.currentTimeMillis()))
             } else {
                 Glide
@@ -83,7 +83,7 @@ class StashGlide private constructor() {
                     .asBitmap()
                     .load(createGlideUrl(url, context))
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true)
+                    .skipMemoryCache(false)
             }
 
         fun withCaching(

@@ -75,7 +75,7 @@ data class Version(
         }
 
     companion object {
-        private val VERSION_REGEX = Regex("v?(\\d+)\\.(\\d+)\\.(\\d+)(-(\\d+)-g([a-zA-Z0-9]+))?")
+        private val VERSION_REGEX = Regex("v?(\\d+)\\.(\\d+)(?:\\.(\\d+))?(-(\\d+)-g([a-zA-Z0-9]+))?")
         val V0_26_0 = fromString("v0.26.0")
         val V0_26_2 = fromString("v0.26.2")
         val V0_27_0 = fromString("v0.27.0")
@@ -109,7 +109,7 @@ data class Version(
             } else {
                 val major = m.groups[1]!!.value.toInt()
                 val minor = m.groups[2]!!.value.toInt()
-                val patch = m.groups[3]!!.value.toInt()
+                val patch = m.groups[3]?.value?.toInt() ?: 0
                 // group 4 is the optional commit info
                 val numCommits = m.groups[5]?.value?.toInt()
                 val hash = m.groups[6]?.value

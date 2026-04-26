@@ -265,7 +265,7 @@ class StashExoPlayer private constructor() {
                 instance?.removeListener(listener)
                 Log.v(TAG, "Removed listener: $listener")
             } else {
-                Log.w(TAG, "Listener was not added previously: $listener")
+                Log.v(TAG, "Listener was not added previously: $listener")
             }
         }
 
@@ -274,7 +274,7 @@ class StashExoPlayer private constructor() {
                 (instance as? ExoPlayer)?.removeAnalyticsListener(listener)
                 Log.v(TAG, "Removed listener: $listener")
             } else {
-                Log.w(TAG, "Listener was not added previously: $listener")
+                Log.v(TAG, "Listener was not added previously: $listener")
             }
         }
     }

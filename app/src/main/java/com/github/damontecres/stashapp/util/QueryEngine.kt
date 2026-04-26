@@ -82,13 +82,13 @@ class QueryEngine(
         withContext(Dispatchers.IO) {
             val queryName = query.operation.name()
             val id = QUERY_ID.getAndIncrement()
-            Log.v(TAG, "executeQuery $id $queryName started")
+            Log.d(TAG, "executeQuery $id $queryName started")
             val startTime = System.currentTimeMillis()
 
             val response = query.execute()
             val duration = System.currentTimeMillis() - startTime
             if (response.data != null) {
-                Log.v(TAG, "executeQuery $id $queryName successful in ${duration}ms")
+                Log.d(TAG, "executeQuery $id $queryName successful in ${duration}ms")
                 return@withContext response
             } else if (response.exception != null) {
                 Log.e(TAG, "executeQuery $id $queryName failed in ${duration}ms", response.exception)

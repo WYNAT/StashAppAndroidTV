@@ -69,7 +69,7 @@ android {
         targetSdk = 36
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         versionCode = gitTags.trim().lines().size + 1
-        versionName = "8.1"
+        versionName = "9.1"
         vectorDrawables.useSupportLibrary = true
     }
     signingConfigs {
@@ -149,6 +149,10 @@ android {
     }
     room {
         schemaDirectory("$projectDir/schemas")
+    }
+    
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
     }
 }
 
@@ -323,6 +327,9 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.robolectric)
 
     androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.androidx.test.ext.junit.ktx)

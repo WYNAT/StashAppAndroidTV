@@ -145,7 +145,14 @@ class StashApplication : Application() {
         }.start()
     }
 
-    override fun getResources(): Resources = Restring.wrapResources(applicationContext, super.getResources())
+    override fun getResources(): Resources {
+        val context = try { applicationContext } catch (e: Exception) { null }
+        return if (context != null) {
+            Restring.wrapResources(context, super.getResources())
+        } else {
+            super.getResources()
+        }
+    }
 
     @Deprecated("Deprecated in Java")
     override fun onLowMemory() {
@@ -176,7 +183,7 @@ class StashApplication : Application() {
     }
 
     companion object {
-        private lateinit var application: StashApplication
+        internal lateinit var application: StashApplication
         private var database: AppDatabase? = null
         lateinit var navigationManager: NavigationManager
         var currentServer: StashServer? = null
