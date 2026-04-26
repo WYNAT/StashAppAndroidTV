@@ -23,6 +23,9 @@ This fork introduces deep, native integration for **The Handy** hardware directl
 - **Interactive UI Indicators:** Scenes with Funscripts are automatically badged with an interactive Gamepad icon across all list and grid views.
 - **Robust Error Handling & Settings:** Features a 30-second connection timeout, video-pause during sync, a native Hardware Test slider, and detailed connection error reporting directly within the app settings and player UI. The integration automatically disables itself if a connection cannot be established.
 - **Quick Player Toggle:** A dedicated Gamepad icon in the Player UI allows for instant enabling/disabling of the Handy integration and immediate script refresh.
+- **Enhanced Player Controls:** Added dedicated "Next" and "Previous" video navigation controls, available across all scene views within the integrated player.
+- **Comprehensive Unit Testing:** Integrated a new testing framework with unit tests for UI rendering and core utilities to ensure application reliability and stability.
+
 
 ## Setup
 
