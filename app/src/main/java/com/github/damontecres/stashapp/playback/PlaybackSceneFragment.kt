@@ -138,33 +138,41 @@ class PlaybackSceneFragment : PlaybackFragment() {
                         buildMediaItem(requireContext(), streamDecision, scene),
                         if (position > 0) position else C.TIME_UNSET,
                     )
+                    exoPlayer.volume = 1f
+                    maybeMuteAudio(requireContext(), false, exoPlayer)
+                    if (videoView.controllerShowTimeoutMs > 0) {
+                        videoView.hideController()
+                    }
 
-                    if (scene.interactive) {
-                        if (!funscriptUrl.isNullOrBlank() &&
-                            com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled) {
-                            Toast.makeText(requireContext(), R.string.funscript_loading, Toast.LENGTH_SHORT).show()
-                            
-                            val isLocalIp = funscriptUrl.contains("//192.168.") || 
-                                            funscriptUrl.contains("//10.") || 
-                                            funscriptUrl.contains("//172.") || 
-                                            funscriptUrl.contains("//localhost") || 
-                                            funscriptUrl.contains("//127.0.0.1")
-                            
-                            lifecycleScope.launch {
-                                try {
-                                    exoPlayer.playWhenReady = false
-                                    if (isLocalIp) {
-                                        Toast.makeText(requireContext(), R.string.handy_cloud_bridge_uploading, Toast.LENGTH_SHORT).show()
-                                    }
-                                    val result = withTimeoutOrNull(30000L) {
+                    if (scene.interactive &&
+                        !funscriptUrl.isNullOrBlank() &&
+                        com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled
+                    ) {
+                        Toast.makeText(requireContext(), R.string.funscript_loading, Toast.LENGTH_SHORT).show()
+
+                        val isLocalIp = funscriptUrl.contains("//192.168.") ||
+                            funscriptUrl.contains("//10.") ||
+                            funscriptUrl.contains("//172.") ||
+                            funscriptUrl.contains("//localhost") ||
+                            funscriptUrl.contains("//127.0.0.1")
+
+                        lifecycleScope.launch {
+                            try {
+                                exoPlayer.playWhenReady = false
+                                if (isLocalIp) {
+                                    Toast.makeText(requireContext(), R.string.handy_cloud_bridge_uploading, Toast.LENGTH_SHORT).show()
+                                }
+                                val result =
+                                    withTimeoutOrNull(30000L) {
                                         com.github.damontecres.stashapp.util.HandyManager.initialize(requireContext())
                                         com.github.damontecres.stashapp.util.HandyManager.setup(funscriptUrl)
                                     } ?: com.github.damontecres.stashapp.util.HandyManager.HandyResult.GenericError("Timeout")
 
-                                    if (result is com.github.damontecres.stashapp.util.HandyManager.HandyResult.Success) {
-                                        Toast.makeText(requireContext(), R.string.funscript_success, Toast.LENGTH_SHORT).show()
-                                        Log.i(TAG, "Handy setup successful")
-                                        StashExoPlayer.addListener(object : Player.Listener {
+                                if (result is com.github.damontecres.stashapp.util.HandyManager.HandyResult.Success) {
+                                    Toast.makeText(requireContext(), R.string.funscript_success, Toast.LENGTH_SHORT).show()
+                                    Log.i(TAG, "Handy setup successful")
+                                    StashExoPlayer.addListener(
+                                        object : Player.Listener {
                                             override fun onIsPlayingChanged(isPlaying: Boolean) {
                                                 if (isPlaying) {
                                                     com.github.damontecres.stashapp.util.HandyManager.play(exoPlayer.currentPosition)
@@ -176,49 +184,44 @@ class PlaybackSceneFragment : PlaybackFragment() {
                                             override fun onPositionDiscontinuity(
                                                 oldPosition: Player.PositionInfo,
                                                 newPosition: Player.PositionInfo,
-                                                reason: Int
+                                                reason: Int,
                                             ) {
                                                 if (exoPlayer.isPlaying) {
                                                     com.github.damontecres.stashapp.util.HandyManager.play(newPosition.positionMs)
                                                 }
                                             }
-                                        })
-                                    } else {
-                                        val errorMsg = result.toString()
-                                        Log.e(TAG, "Handy setup failed: $errorMsg")
-                                        
-                                        withContext(Dispatchers.Main) {
-                                            val errorText = "The Handy cloud could not process the funscript.\n\nError: $errorMsg\n\nURL: $funscriptUrl\n\nNote: If you use a local IP, the Handy cloud cannot reach it."
-                                            val builder = AlertDialog.Builder(requireContext())
-                                            builder.setTitle("Handy Funscript Error")
-                                            builder.setMessage(errorText)
-                                            builder.setPositiveButton(android.R.string.ok, null)
-                                            builder.setNeutralButton("Copy Error") { _, _ ->
-                                                val clipboard = requireContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                                val clip = android.content.ClipData.newPlainText("Handy Error", errorText)
-                                                clipboard.setPrimaryClip(clip)
-                                                Toast.makeText(requireContext(), "Copied to clipboard", Toast.LENGTH_SHORT).show()
-                                            }
-                                            builder.show()
+                                        },
+                                    )
+                                } else {
+                                    val errorMsg = result.toString()
+                                    Log.e(TAG, "Handy setup failed: $errorMsg")
+
+                                    withContext(Dispatchers.Main) {
+                                        val errorText = "The Handy cloud could not process the funscript.\n\nError: $errorMsg\n\nURL: $funscriptUrl\n\nNote: If you use a local IP, the Handy cloud cannot reach it."
+                                        val builder = AlertDialog.Builder(requireContext())
+                                        builder.setTitle("Handy Funscript Error")
+                                        builder.setMessage(errorText)
+                                        builder.setPositiveButton(android.R.string.ok, null)
+                                        builder.setNeutralButton("Copy Error") { _, _ ->
+                                            val clipboard = requireContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                            val clip = android.content.ClipData.newPlainText("Handy Error", errorText)
+                                            clipboard.setPrimaryClip(clip)
+                                            Toast.makeText(requireContext(), "Copied to clipboard", Toast.LENGTH_SHORT).show()
                                         }
+                                        builder.show()
                                     }
-                                } catch (e: Exception) {
-                                    Log.e(TAG, "Handy setup error", e)
-                                    Toast.makeText(requireContext(), R.string.funscript_error, Toast.LENGTH_LONG).show()
-                                } finally {
-                                    exoPlayer.playWhenReady = wasPlayingBeforeResultLauncher ?: true
                                 }
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Handy setup error", e)
+                                Toast.makeText(requireContext(), R.string.funscript_error, Toast.LENGTH_LONG).show()
+                            } finally {
+                                exoPlayer.playWhenReady = wasPlayingBeforeResultLauncher ?: true
                             }
                         }
-
-                        exoPlayer.volume = 1f
-                        maybeMuteAudio(requireContext(), false, exoPlayer)
-                        if (videoView.controllerShowTimeoutMs > 0) {
-                            videoView.hideController()
-                        }
-                        exoPlayer.prepare()
-                        exoPlayer.playWhenReady = wasPlayingBeforeResultLauncher ?: true
                     }
+
+                    exoPlayer.prepare()
+                    exoPlayer.playWhenReady = wasPlayingBeforeResultLauncher ?: true
                 } else {
                     videoView.useController = false
                     Toast
