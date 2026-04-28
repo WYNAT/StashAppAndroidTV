@@ -130,6 +130,7 @@ abstract class PlaylistFragment<T : Query.Data, D : StashData, C : Query.Data> :
      * Build the initial playlist
      */
     private suspend fun buildPlaylist() {
+        currentPage = 1
         val filter = playlistViewModel.filterArgs.value!!
         val dataSupplier =
             DataSupplierFactory(StashServer.getCurrentServerVersion()).create<T, D, C>(filter)
@@ -145,7 +146,7 @@ abstract class PlaylistFragment<T : Query.Data, D : StashData, C : Query.Data> :
         maybeMuteAudio(requireContext(), false, player!!)
         player!!.prepare()
         if (destination.position > 0 || destination.startPosition > 0L) {
-            playIndex(destination.position, destination.startPosition)
+            seekToIndex(destination.position, destination.startPosition)
         }
         player!!.play()
         totalCount = pagingSource.getCount()
@@ -191,39 +192,43 @@ abstract class PlaylistFragment<T : Query.Data, D : StashData, C : Query.Data> :
         }
     }
 
+    private suspend fun seekToIndex(
+        index: Int,
+        startPosition: Long = 0L,
+    ) {
+        val player = player!!
+        Log.v(
+            TAG,
+            "index=$index, startPosition=$startPosition, player.mediaItemCount=${player.mediaItemCount}",
+        )
+        // Check if the index is out of bounds and add pages until the item is available
+        while (index >= player.mediaItemCount) {
+            if (!addNextPageToPlaylist()) {
+                Log.w(
+                    TAG,
+                    "Requested $index with ${player.mediaItemCount} media items in player, " +
+                        "but addNextPageToPlaylist returned no additional items",
+                )
+                Toast
+                    .makeText(
+                        requireContext(),
+                        "Unable to find item to play. This might be a bug!",
+                        Toast.LENGTH_LONG,
+                    ).show()
+                return
+            }
+            Log.v(TAG, "after fetch: player.mediaItemCount=${player.mediaItemCount}")
+        }
+        hidePlaylist()
+        player.seekTo(index, if (startPosition > 0L) startPosition else androidx.media3.common.C.TIME_UNSET)
+    }
+
     fun playIndex(
         index: Int,
         startPosition: Long = 0L,
     ) {
         viewLifecycleOwner.lifecycleScope.launch(StashCoroutineExceptionHandler()) {
-            val player = player!!
-            Log.v(
-                TAG,
-                "index=$index, startPosition=$startPosition, player.mediaItemCount=${player.mediaItemCount}",
-            )
-            // The play will ignore requests to play something not in the playlist
-            // So check if the index is out of bounds and add pages until either the item is available or there are not more pages
-            // The latter shouldn't happen until there's a bug
-            while (index >= player.mediaItemCount) {
-                if (!addNextPageToPlaylist()) {
-                    // This condition is most likely a bug
-                    Log.w(
-                        TAG,
-                        "Requested $index with ${player.mediaItemCount} media items in player, " +
-                            "but addNextPageToPlaylist returned no additional items",
-                    )
-                    Toast
-                        .makeText(
-                            requireContext(),
-                            "Unable to find item to play. This might be a bug!",
-                            Toast.LENGTH_LONG,
-                        ).show()
-                    return@launch
-                }
-                Log.v(TAG, "after fetch: player.mediaItemCount=${player.mediaItemCount}")
-            }
-            hidePlaylist()
-            player.seekTo(index, if (startPosition > 0L) startPosition else androidx.media3.common.C.TIME_UNSET)
+            seekToIndex(index, startPosition)
         }
     }
 
