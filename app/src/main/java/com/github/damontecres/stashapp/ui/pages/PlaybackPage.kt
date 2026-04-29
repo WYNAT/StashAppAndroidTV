@@ -207,7 +207,10 @@ fun PlaylistPlaybackPage(
         val items =
             pager?.let {
                 buildList {
-                    for (i in 0..<(it.size).coerceAtMost(MAX_PLAYLIST_SIZE)) {
+                    val limit = (startIndex + PLAYLIST_PREFETCH)
+                        .coerceAtLeast(MAX_PLAYLIST_SIZE)
+                        .coerceAtMost(it.size)
+                    for (i in 0..<limit) {
                         it.getBlocking(i)?.let { item ->
                             add(
                                 convertToMediaItem(

@@ -528,7 +528,7 @@ fun PlaybackPageContent(
 ) {
     var savedStartPosition by rememberSaveable(startPosition) { mutableLongStateOf(startPosition) }
     var currentPlaylistIndex by rememberSaveable(startIndex) { mutableIntStateOf(startIndex) }
-    if (playlist.isEmpty() || playlist.size < currentPlaylistIndex) {
+    if (playlist.isEmpty() || playlist.size <= currentPlaylistIndex) {
         return
     }
 
