@@ -48,7 +48,24 @@ class NavigationManagerCompose(
                 controller!!.popUpTo { it == Destination.Main }
             }
             if (destination != Destination.Main) {
-                controller!!.navigate(destination)
+                // If navigating to Destination.Item with filter position context, update Destination.Filter on backstack
+                if (destination is Destination.Item && destination.filterPosition >= 0) {
+                    val currentBackstack = controller!!.backstack.entries
+                    val newBackstack = buildList {
+                        currentBackstack.forEach { entry ->
+                            val dest = entry.destination
+                            if (dest is Destination.Filter && (destination.filterArgs == null || dest.filterArgs == destination.filterArgs)) {
+                                add(dev.olshevski.navigation.reimagined.navEntry(dest.copy(position = destination.filterPosition)))
+                            } else {
+                                add(entry)
+                            }
+                        }
+                        add(dev.olshevski.navigation.reimagined.navEntry(destination))
+                    }
+                    controller!!.setNewBackstack(newBackstack, dev.olshevski.navigation.reimagined.NavAction.Navigate)
+                } else {
+                    controller!!.navigate(destination)
+                }
             }
         } else {
             serverViewModel.submit(destination, popUpToMain)
@@ -66,6 +83,7 @@ class NavigationManagerCompose(
                     filterArgs = destination.filterArgs,
                     position = destination.filterPosition,
                     startPosition = destination.position,
+                    initialSceneId = destination.sceneId,
                 ),
             )
             return

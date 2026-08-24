@@ -147,7 +147,7 @@ fun PhashDistanceCriterionInput.toMap(): Map<String, Any> =
 fun DuplicationCriterionInput.toMap(): Map<String, Any> =
     buildMap {
         put("modifier", CriterionModifier.EQUALS.rawValue)
-        if (phash.getOrNull() == false) {
+        if (duplicated.getOrNull() == false) {
             put("value", false)
         } else {
             put("value", true)

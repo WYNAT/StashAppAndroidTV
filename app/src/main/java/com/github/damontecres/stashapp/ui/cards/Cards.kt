@@ -456,7 +456,7 @@ fun CardImage(
     @DrawableRes defaultImageDrawableRes: Int?,
     imageContent: @Composable (BoxScope.() -> Unit)?,
     modifier: Modifier = Modifier,
-    crossFade: Boolean = true,
+    crossFade: Boolean = false,
 ) {
     Box(
         modifier =
@@ -470,18 +470,19 @@ fun CardImage(
                 contentDescription = null,
             )
         } else if (imageUrl.isNotNullOrBlank()) {
+            val context = LocalContext.current
             val placeholderPainter = defaultImageDrawableRes?.let { painterResource(id = it) }
-            // Disable crossfade while scrolling so newly-visible cards render immediately
-            // instead of waiting for the animation to complete.
-            val scrollInProgress = LocalScrollInProgress.current
+            val request =
+                remember(imageUrl, crossFade) {
+                    ImageRequest
+                        .Builder(context)
+                        .data(imageUrl)
+                        .crossfade(crossFade)
+                        .build()
+                }
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
-                model =
-                    ImageRequest
-                        .Builder(LocalContext.current)
-                        .data(imageUrl)
-                        .crossfade(crossFade && !scrollInProgress)
-                        .build(),
+                model = request,
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
                 placeholder = placeholderPainter,

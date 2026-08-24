@@ -199,14 +199,15 @@ fun PlaylistPlaybackPage(
     itemOnClick: ItemOnClicker<Any>,
     modifier: Modifier = Modifier,
     clipDuration: Duration = 30.seconds,
-    viewModel: FilterViewModel = viewModel(key = "playlistData"),
-    playlistViewModel: FilterViewModel = viewModel(key = "playlistUi"),
+    initialSceneId: String? = null,
+    viewModel: FilterViewModel = viewModel(key = "playlistData_${filterArgs.hashCode()}_${startIndex}_${initialSceneId}"),
+    playlistViewModel: FilterViewModel = viewModel(key = "playlistUi_${filterArgs.hashCode()}_${startIndex}_${initialSceneId}"),
 ) {
     val globalContext = LocalGlobalContext.current
     val navManager = globalContext.navigationManager as? NavigationManagerCompose
     val controller = navManager?.controller
     val scope = rememberCoroutineScope()
-    Log.v("PlaybackPageContent", "startIndex=$startIndex")
+    Log.v("PlaybackPageContent", "startIndex=$startIndex, initialSceneId=$initialSceneId")
     val context = LocalContext.current
 
     LaunchedEffect(server, filterArgs) {
@@ -308,10 +309,13 @@ fun PlaylistPlaybackPage(
 
     // KEY FIX: Load only a small window around startIndex instead of all items from 0.
     // This reduces initial network queries from O(startIndex/pageSize) to O(1).
-    LaunchedEffect(pager) {
+    LaunchedEffect(pager, filterArgs) {
         val p = pager ?: return@LaunchedEffect
         val total = p.size
         if (total == 0) return@LaunchedEffect
+
+        val adjustedFilter = adjustFilter(filterArgs)
+        if (p.filter != adjustedFilter) return@LaunchedEffect
 
         // Window: load [windowStart, windowEnd) around startIndex
         val windowStart = maxOf(0, startIndex - PLAYLIST_WINDOW)
@@ -326,10 +330,25 @@ fun PlaylistPlaybackPage(
                 }
             }
         }
+        playlist.clear()
         playlist.addAll(items)
 
+        // Find exact target item index if initialSceneId is specified
+        val actualStartIndex = if (initialSceneId != null) {
+            var match = -1
+            for (i in windowStart until windowEnd) {
+                if (p.getBlocking(i)?.id == initialSceneId) {
+                    match = i
+                    break
+                }
+            }
+            if (match >= 0) match else startIndex
+        } else {
+            startIndex
+        }
+
         // Resolve only the first playback item immediately
-        val playerStartIndex = startIndex - windowStart
+        val playerStartIndex = (actualStartIndex - windowStart).coerceAtLeast(0)
         resolveMediaItemAt(playerStartIndex)
         isBuildingPlaylist = false
     }

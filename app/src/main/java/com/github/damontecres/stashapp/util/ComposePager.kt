@@ -19,7 +19,7 @@ class ComposePager<T : StashData>(
     private val source: StashPagingSource<*, *, T, *>,
     private val scope: CoroutineScope,
     private val pageSize: Int = 25,
-    cacheSize: Long = 8,
+    cacheSize: Long = 32,
 ) : AbstractList<T?>() {
     private var items by mutableStateOf(ItemList<T>(0, pageSize, mapOf()))
     private var totalCount by mutableIntStateOf(-1)

@@ -43,7 +43,7 @@ fun CoilConfig(
             .memoryCache(
                 MemoryCache
                     .Builder()
-                    .maxSizePercent(ctx, 0.25)
+                    .maxSizePercent(ctx, 0.35)
                     .build(),
             ).diskCache(
                 DiskCache
@@ -51,7 +51,7 @@ fun CoilConfig(
                     .directory(ctx.cacheDir.resolve("coil3_image_cache"))
                     .maxSizeBytes(diskCacheSize)
                     .build(),
-            ).crossfade(true)
+            ).crossfade(false)
             .logger(if (cacheLogging) DebugLogger() else null)
             .components {
                 if (alwaysCache) {

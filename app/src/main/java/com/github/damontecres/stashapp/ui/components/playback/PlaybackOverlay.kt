@@ -111,6 +111,8 @@ class ControllerViewState internal constructor(
     private var _controlsVisible by mutableStateOf(false)
     val controlsVisible get() = _controlsVisible
 
+    var hasActiveDialog by mutableStateOf(false)
+
     fun showControls(milliseconds: Int = hideMilliseconds) {
         if (controlsEnabled) {
             _controlsVisible = true
@@ -119,7 +121,9 @@ class ControllerViewState internal constructor(
     }
 
     fun hideControls() {
-        _controlsVisible = false
+        if (!hasActiveDialog) {
+            _controlsVisible = false
+        }
     }
 
     fun toggleControls() {
@@ -138,7 +142,9 @@ class ControllerViewState internal constructor(
             .debounce { it.toLong() }
             .collect {
 //                Log.i("PlaybackPageContent", "collect")
-                _controlsVisible = false
+                if (!hasActiveDialog) {
+                    _controlsVisible = false
+                }
             }
     }
 }
@@ -174,6 +180,7 @@ fun PlaybackOverlay(
     spriteData: List<SpriteData>,
     isHandyEnabled: Boolean = false,
     showHandyIcon: Boolean = false,
+    handyDelayMs: Long = 0L,
     isLooping: Boolean = false,
     modifier: Modifier = Modifier,
     seekPreviewPlaceholder: Painter? = null,
@@ -341,6 +348,7 @@ fun PlaybackOverlay(
                         sfwMode = uiConfig.sfwMode,
                         isHandyEnabled = isHandyEnabled,
                         showHandyIcon = showHandyIcon,
+                        handyDelayMs = handyDelayMs,
                         isLooping = isLooping,
                     )
                     if (markers.isNotEmpty()) {

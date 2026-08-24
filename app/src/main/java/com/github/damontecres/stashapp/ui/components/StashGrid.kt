@@ -591,7 +591,10 @@ fun StashGrid(
                             }
                         },
             ) {
-                items(pager.size) { index ->
+                items(
+                    count = pager.size,
+                    key = { it },
+                ) { index ->
                     val mod =
                         if (index == savedFocusedIndex) {
                             if (DEBUG) Log.d(TAG, "Adding firstFocus to itemClickedIndex $index")

@@ -189,6 +189,7 @@ class PlaybackViewModel :
     val oCount = MutableLiveData(0)
     val rating100 = MutableLiveData(0)
     val handyError = mutableStateOf<String?>(null)
+    val isHandyEnabled = mutableStateOf(com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled)
     val spriteImageLoaded = MutableLiveData<List<SpriteData>>(emptyList())
     private var handyJob: Job? = null
 
@@ -219,6 +220,8 @@ class PlaybackViewModel :
         this.markersEnabled = markersEnabled
         this.saveFilters = saveFilters
         this.videoFiltersEnabled = videoFiltersEnabled
+        this.uiConfig = uiConfig
+        this.isHandyEnabled.value = com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled
         this.exceptionHandler = LoggingCoroutineExceptionHandler(server, viewModelScope)
         player.addListener(this)
         addCloseable { player.removeListener(this@PlaybackViewModel) }
@@ -406,23 +409,10 @@ class PlaybackViewModel :
                 }
 
                 if (!funscriptUrl.isNullOrBlank()) {
-                    player.pause()
-                    showToast(R.string.funscript_loading, Toast.LENGTH_SHORT)
-                    
                     var currentUrl = funscriptUrl
-                    val isLocalIp = currentUrl.contains("//192.168.") || 
-                                    currentUrl.contains("//10.") || 
-                                    currentUrl.contains("//172.") || 
-                                    currentUrl.contains("//localhost") || 
-                                    currentUrl.contains("//127.0.0.1")
-                    
                     try {
-                        if (isLocalIp) {
-                            showToast(R.string.handy_cloud_bridge_uploading, Toast.LENGTH_SHORT)
-                        }
-                        
                         val initialUrl = currentUrl
-                        var result = kotlinx.coroutines.withTimeoutOrNull(30000L) {
+                        var result = kotlinx.coroutines.withTimeoutOrNull(8000L) {
                             com.github.damontecres.stashapp.util.HandyManager.initialize(StashApplication.getApplication())
                             com.github.damontecres.stashapp.util.HandyManager.setup(initialUrl)
                         } ?: com.github.damontecres.stashapp.util.HandyManager.HandyResult.GenericError("Timeout")
@@ -437,7 +427,7 @@ class PlaybackViewModel :
                             if (!dupUrl.isNullOrBlank()) {
                                 currentUrl = dupUrl
                                 val backupUrl = currentUrl
-                                result = kotlinx.coroutines.withTimeoutOrNull(30000L) {
+                                result = kotlinx.coroutines.withTimeoutOrNull(8000L) {
                                     com.github.damontecres.stashapp.util.HandyManager.setup(backupUrl)
                                 } ?: com.github.damontecres.stashapp.util.HandyManager.HandyResult.GenericError("Timeout")
                             }
@@ -446,21 +436,31 @@ class PlaybackViewModel :
                         if (result is com.github.damontecres.stashapp.util.HandyManager.HandyResult.Success) {
                             showToast(R.string.funscript_success, Toast.LENGTH_SHORT)
                             Log.i(TAG, "Handy setup successful")
+                            if (player.isPlaying) {
+                                com.github.damontecres.stashapp.util.HandyManager.play(player.currentPosition)
+                            }
                         } else {
                             val errorMsg = result.toString()
-                            val displayUrl = currentUrl
-                            viewModelScope.launch {
-                                withContext(Dispatchers.Main) {
-                                    handyError.value = "The Handy cloud could not process the funscript.\n\nError: $errorMsg\n\nURL: $displayUrl\n\nNote: If you use a local IP, the Handy cloud cannot reach it."
-                                }
+                            Log.d(TAG, "Handy setup failed/timeout, disabling Handy: $errorMsg")
+                            com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled = false
+                            withContext(Dispatchers.Main) {
+                                isHandyEnabled.value = false
                             }
-                            Log.e(TAG, "Handy setup failed: $errorMsg")
+                            StashApplication.getApplication().preferences.updateData { prefs ->
+                                com.github.damontecres.stashapp.ui.components.prefs.StashPreference.HandyEnabled.setter(prefs, false)
+                            }
                         }
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        throw e
                     } catch (e: Exception) {
-                        Log.e(TAG, "Handy setup error", e)
-                        showToast(R.string.funscript_error, Toast.LENGTH_LONG)
-                    } finally {
-                        player.play()
+                        Log.d(TAG, "Handy setup error, disabling Handy: ${e.message}")
+                        com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled = false
+                        withContext(Dispatchers.Main) {
+                            isHandyEnabled.value = false
+                        }
+                        StashApplication.getApplication().preferences.updateData { prefs ->
+                            com.github.damontecres.stashapp.ui.components.prefs.StashPreference.HandyEnabled.setter(prefs, false)
+                        }
                     }
                 }
             }
@@ -744,12 +744,8 @@ fun PlaybackPageContent(
     val ratingFocusRequester = remember { FocusRequester() }
 
     // Reactive Handy state so the icon recomposes when toggled
-    var isHandyEnabled by remember { mutableStateOf(com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled) }
-
-    // Re-sync UI state when scene changes or deactivation happens in VM
-    LaunchedEffect(scene, viewModel.handyError.value) {
-        isHandyEnabled = com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled
-    }
+    val isHandyEnabled = viewModel.isHandyEnabled.value
+    var handyDelayMs by remember { mutableLongStateOf(com.github.damontecres.stashapp.util.HandyManager.delayCompensation) }
 
     AmbientPlayerListener(player)
 
@@ -801,6 +797,16 @@ fun PlaybackPageContent(
                 it.observe()
             }
         }
+
+    val isPageDialogOpen = showFilterDialog || showSceneDetails || showRatingDialog || showPlaylist || (createMarkerPosition >= 0)
+    LaunchedEffect(isPageDialogOpen) {
+        if (isPageDialogOpen) {
+            controllerViewState.hasActiveDialog = true
+        } else {
+            controllerViewState.hasActiveDialog = false
+            controllerViewState.pulseControls()
+        }
+    }
 
     val retryMediaItemIds = remember { mutableSetOf<String>() }
 
@@ -1125,6 +1131,7 @@ fun PlaybackPageContent(
                     playerControls = PlayerControlsImpl(player),
                     isHandyEnabled = isHandyEnabled,
                     showHandyIcon = currentScene.item.interactive || !currentScene.item.funscriptUrl.isNullOrBlank(),
+                    handyDelayMs = handyDelayMs,
                     onPlaybackActionClick = {
                         when (it) {
                             PlaybackAction.CreateMarker -> {
@@ -1184,7 +1191,7 @@ fun PlaybackPageContent(
                                 com.github.damontecres.stashapp.util.HandyManager.initialize(context)
                                 val enabled = !com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled
                                 com.github.damontecres.stashapp.util.HandyManager.isHandyEnabled = enabled
-                                isHandyEnabled = enabled
+                                viewModel.isHandyEnabled.value = enabled
                                 scope.launch {
                                     context.preferences.updateData { prefs ->
                                         com.github.damontecres.stashapp.ui.components.prefs.StashPreference.HandyEnabled.setter(prefs, enabled)
@@ -1194,6 +1201,20 @@ fun PlaybackPageContent(
                                     viewModel.scene.value?.let { s -> viewModel.setupHandy(s) }
                                 } else {
                                     com.github.damontecres.stashapp.util.HandyManager.stop()
+                                }
+                            }
+
+                            is PlaybackAction.SetHandyDelay -> {
+                                com.github.damontecres.stashapp.util.HandyManager.initialize(context)
+                                com.github.damontecres.stashapp.util.HandyManager.delayCompensation = it.delayMs
+                                handyDelayMs = it.delayMs
+                                scope.launch {
+                                    context.preferences.updateData { prefs ->
+                                        com.github.damontecres.stashapp.ui.components.prefs.StashPreference.HandyDelayCompensation.setter(prefs, it.delayMs.toString())
+                                    }
+                                }
+                                if (viewModel.isHandyEnabled.value && player.isPlaying) {
+                                    com.github.damontecres.stashapp.util.HandyManager.play(player.currentPosition)
                                 }
                             }
 
@@ -1272,61 +1293,6 @@ fun PlaybackPageContent(
             createMarkerPosition = -1
             if (playingBeforeDialog) {
                 player.play()
-            }
-        }
-        AnimatedVisibility(viewModel.handyError.value != null) {
-            val error = viewModel.handyError.value
-            if (error != null) {
-                LaunchedEffect(Unit) {
-                    playingBeforeDialog = player.isPlaying
-                    player.pause()
-                }
-                androidx.compose.ui.window.Dialog(
-                    onDismissRequest = {
-                        viewModel.handyError.value = null
-                        if (playingBeforeDialog) {
-                            player.play()
-                        }
-                    }
-                ) {
-                    androidx.tv.material3.Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        colors = androidx.tv.material3.SurfaceDefaults.colors(
-                            containerColor = Material3Theme.colorScheme.surface,
-                            contentColor = Material3Theme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier
-                            .padding(16.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(24.dp)
-                                .verticalScroll(rememberScrollState()),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                "Handy Funscript Error",
-                                style = Material3Theme.typography.headlineSmall,
-                                color = Material3Theme.colorScheme.error
-                            )
-                            Text(
-                                error,
-                                color = Material3Theme.colorScheme.onSurface
-                            )
-                            Button(
-                                onClick = {
-                                    viewModel.handyError.value = null
-                                    if (playingBeforeDialog) {
-                                        player.play()
-                                    }
-                                }
-                            ) {
-                                Text("OK")
-                            }
-                        }
-                    }
-                }
             }
         }
         SearchForDialog(

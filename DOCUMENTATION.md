@@ -99,11 +99,11 @@ The Funscript feature allows synchronization of "The Handy" devices directly via
     3.  **Cloud Bridge (Local IP Workaround):** If a local IP is detected (192.168.x.x etc.) and the option is enabled, the script is automatically uploaded to the Handy hosting API to generate a temporary public URL.
     4.  The (possibly bridged) script is configured on the device.
     5.  `HandyManager.play(position)` synchronizes playback.
-    6.  Error and status messages are output via detailed dialogs (Leanback & Compose) with error codes and URLs.
+    6.  If the device is unreachable or times out during setup, error popups are suppressed, the Handy integration is automatically deactivated, and the Gamepad icon in the player UI is dimmed (inactive) until manually toggled again.
 
 ### Configuration
 *   **Enable/Disable Toggle:** Global switch in Settings (Old UI XML & Compose), and via a Gamepad icon in the Player UI.
-*   **Persistent Logic:** The integration remains enabled even if `setup()` fails due to transient network or API errors. This allows retries without manual re-activation in Settings.
+*   **Delay Compensation Slider:** Accessible directly within the player options menu ("Funscript Delay") or by long-clicking the Gamepad button. Supports fine adjustments (-2000ms to +2000ms) with step shortcuts (-100, -25, 0, +25, +100ms) and persists to user preferences.
 *   **Connection Key:** The Handy key must be entered in the UI settings.
 *   **Handy Cloud Bridge:** Enables the use of Funscripts on local Stash servers via automatic hosting relay.
 *   **Sync:** Provides functions for testing the connection and adjusting the server time (offset correction).

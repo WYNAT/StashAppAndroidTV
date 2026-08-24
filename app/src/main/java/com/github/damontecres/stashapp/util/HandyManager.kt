@@ -12,6 +12,7 @@ import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
@@ -20,7 +21,7 @@ object HandyManager {
     internal var BASE_URL = "https://www.handyfeeling.com/api/handy/v2"
     internal var HOSTING_URL = "https://www.handyfeeling.com/api/hosting/v2"
 
-    private const val TIMEOUT_SECONDS = 30L
+    private const val TIMEOUT_SECONDS = 5L
     private const val HSSP_MODE = 1
     private const val HDSP_MODE = 2
     private const val TEST_POSITION_MIN = 0
@@ -55,8 +56,11 @@ object HandyManager {
     private val connectionKey: String
         get() = prefs?.getString(connectionKeyPrefName, "")?.trim() ?: ""
 
-    private val delayCompensation: Long
+    var delayCompensation: Long
         get() = prefs?.getString(delayCompensationPrefName, "0")?.toLongOrNull() ?: 0L
+        set(value) {
+            prefs?.edit()?.putString(delayCompensationPrefName, value.toString())?.apply()
+        }
 
     private val isCloudBridgeEnabled: Boolean
         get() = prefs?.getBoolean(cloudBridgePrefName, true) ?: true
@@ -92,7 +96,8 @@ object HandyManager {
                     }
                 }
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                Log.e(TAG, "Failed to sync server time", e)
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                Log.d(TAG, "Handy syncServerTime skipped: ${e.message}")
             }
         }
     }
@@ -178,7 +183,7 @@ object HandyManager {
         }
     }
 
-    private suspend fun parseHandyResponse(response: okhttp3.Response): HandyResult {
+    private fun parseHandyResponse(response: Response): HandyResult {
         val body = response.body.string()
         if (response.isSuccessful) {
             val jsonResponse = try { JSONObject(body) } catch (@Suppress("TooGenericExceptionCaught") e: Exception) { null }
@@ -211,7 +216,8 @@ object HandyManager {
                 parseHandyResponse(response)
             }
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            Log.e(TAG, "Handy setMode failed", e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            Log.d(TAG, "Handy setMode failed: ${e.message}")
             HandyResult.NetworkError(e.message ?: "Network error")
         }
     }
@@ -223,13 +229,13 @@ object HandyManager {
         }
 
         if (connectionKey.isBlank()) {
-            Log.e(TAG, "Handy setup failed: Connection key is blank")
+            Log.d(TAG, "Handy setup failed: Connection key is blank")
             return@withContext HandyResult.GenericError("Connection key is blank. Please set it in Settings.")
         }
         
         var normalizedUrl = url.trim()
         if (!normalizedUrl.startsWith("http://", ignoreCase = true) && !normalizedUrl.startsWith("https://", ignoreCase = true)) {
-            Log.e(TAG, "Handy setup failed: Unsupported URL protocol - $normalizedUrl")
+            Log.d(TAG, "Handy setup failed: Unsupported URL protocol - $normalizedUrl")
             return@withContext HandyResult.ApiError(ERROR_CODE_UNSUPPORTED_PROTOCOL, "Unsupported URL protocol. Only http/https supported.")
         }
 
@@ -256,7 +262,7 @@ object HandyManager {
             // Ensure we are in HSSP mode (HSSP_MODE) before setup
             val modeResult = setMode(HSSP_MODE)
             if (modeResult !is HandyResult.Success) {
-                Log.e(TAG, "Handy setup failed: Could not set HSSP mode - $modeResult")
+                Log.d(TAG, "Handy setup failed: Could not set HSSP mode - $modeResult")
                 return@withContext modeResult
             }
 
@@ -272,12 +278,13 @@ object HandyManager {
                 val result = parseHandyResponse(response)
                 Log.i(TAG, "Handy setup result: $result")
                 if (result !is HandyResult.Success) {
-                    Log.w(TAG, "Handy setup failed by API: $result")
+                    Log.d(TAG, "Handy setup failed by API: $result")
                 }
                 result
             }
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            Log.e(TAG, "Handy setup exception", e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            Log.d(TAG, "Handy setup exception: ${e.message}")
             HandyResult.NetworkError(e.message ?: "Network error")
         }
     }
@@ -318,11 +325,12 @@ object HandyManager {
                         return@withContext publicUrl
                     }
                 }
-                Log.e(TAG, "Hosting upload failed: ${response.code}")
+                Log.d(TAG, "Hosting upload failed: ${response.code}")
                 null
             }
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            Log.e(TAG, "Error in Cloud Bridge upload", e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            Log.d(TAG, "Error in Cloud Bridge upload: ${e.message}")
             null
         }
     }
@@ -373,7 +381,8 @@ object HandyManager {
             Log.i(TAG, "Handy hardware test finished")
             HandyResult.Success
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            Log.e(TAG, "Handy hardware test exception", e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            Log.d(TAG, "Handy hardware test exception: ${e.message}")
             HandyResult.NetworkError(e.message ?: "Network error")
         }
     }
@@ -395,7 +404,8 @@ object HandyManager {
                     Log.i(TAG, "Handy play response: ${response.code}")
                 }
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                Log.e(TAG, "Handy play failed", e)
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                Log.d(TAG, "Handy play failed: ${e.message}")
             }
         }
     }
@@ -413,7 +423,8 @@ object HandyManager {
                     Log.i(TAG, "Handy stop response: ${response.code}")
                 }
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                Log.e(TAG, "Handy stop failed", e)
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                Log.d(TAG, "Handy stop failed: ${e.message}")
             }
         }
     }

@@ -111,9 +111,10 @@ sealed class Destination(
         val position: Int,
         val duration: Long? = null,
         val startPosition: Long = 0L,
+        val initialSceneId: String? = null,
     ) : Destination(true) {
         override fun toString(): String =
-            "Playlist(destId=$destId, dataType=${filterArgs.dataType}, position=$position, duration=$duration, startPosition=$startPosition)"
+            "Playlist(destId=$destId, dataType=${filterArgs.dataType}, position=$position, duration=$duration, startPosition=$startPosition, initialSceneId=$initialSceneId)"
     }
 
     @Serializable

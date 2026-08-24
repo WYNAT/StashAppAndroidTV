@@ -75,4 +75,20 @@ class HandyManagerTest : BaseTest() {
         val result = HandyManager.setMode(1)
         assertTrue(result is HandyManager.HandyResult.Success)
     }
+
+    @Test
+    fun testDelayCompensation() {
+        HandyManager.delayCompensation = 250L
+        assertEquals(250L, HandyManager.delayCompensation)
+        HandyManager.delayCompensation = -100L
+        assertEquals(-100L, HandyManager.delayCompensation)
+    }
+
+    @Test
+    fun testHandyEnabledToggle() {
+        HandyManager.isHandyEnabled = true
+        assertTrue(HandyManager.isHandyEnabled)
+        HandyManager.isHandyEnabled = false
+        assertFalse(HandyManager.isHandyEnabled)
+    }
 }

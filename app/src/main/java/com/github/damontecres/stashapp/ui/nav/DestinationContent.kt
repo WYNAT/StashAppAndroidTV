@@ -134,6 +134,7 @@ fun DestinationContent(
                 startIndex = destination.position,
                 clipDuration = destination.duration?.milliseconds ?: 30.seconds,
                 itemOnClick = itemOnClick,
+                initialSceneId = destination.initialSceneId,
                 modifier = modifier,
             )
         }

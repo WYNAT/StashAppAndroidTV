@@ -67,6 +67,10 @@ import androidx.tv.material3.Text
 import com.github.damontecres.stashapp.R
 import com.github.damontecres.stashapp.data.Scene
 import com.github.damontecres.stashapp.playback.TrackSupport
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.text.style.TextAlign
+import com.github.damontecres.stashapp.ui.components.SliderBar
 import com.github.damontecres.stashapp.ui.AppColors
 import com.github.damontecres.stashapp.ui.FontAwesome
 import com.github.damontecres.stashapp.ui.PreviewTheme
@@ -109,6 +113,9 @@ sealed interface PlaybackAction {
     data object ShowSceneDetails : PlaybackAction
     data object ShowRatingDialog : PlaybackAction
     data object ToggleHandy : PlaybackAction
+    data class SetHandyDelay(
+        val delayMs: Long,
+    ) : PlaybackAction
     data object Rewind : PlaybackAction
     data object FastForward : PlaybackAction
     data object ShowCaptions : PlaybackAction
@@ -159,6 +166,7 @@ fun PlaybackControls(
     seekBarIntervals: Int,
     isHandyEnabled: Boolean = false,
     showHandyIcon: Boolean = false,
+    handyDelayMs: Long = 0L,
     isLooping: Boolean = false,
     modifier: Modifier = Modifier,
     isMobile: Boolean = !isTvDevice,
@@ -177,6 +185,20 @@ fun PlaybackControls(
     var showAudioDialog by remember { mutableStateOf(false) }
     var showSpeedDialog by remember { mutableStateOf(false) }
     var showScaleDialog by remember { mutableStateOf(false) }
+    var showDelayDialog by remember { mutableStateOf(false) }
+    var isMoreOptionsOpen by remember { mutableStateOf(false) }
+
+    val isAnyDialogOpen = showCaptionDialog || showOptionsDialog || showAudioDialog || 
+                          showSpeedDialog || showScaleDialog || showDelayDialog || isMoreOptionsOpen
+
+    LaunchedEffect(isAnyDialogOpen) {
+        if (isAnyDialogOpen) {
+            controllerViewState.hasActiveDialog = true
+        } else {
+            controllerViewState.hasActiveDialog = false
+            controllerViewState.pulseControls()
+        }
+    }
 
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val onControllerInteraction = {
@@ -223,6 +245,8 @@ fun PlaybackControls(
         ) {
             LeftPlaybackButtons(
                 onControllerInteraction = onControllerInteraction,
+                onControllerInteractionForDialog = onControllerInteractionForDialog,
+                onDialogStateChange = { isMoreOptionsOpen = it },
                 onPlaybackActionClick = onPlaybackActionClick,
                 showDebugInfo = showDebugInfo,
                 oCount = oCounter,
@@ -270,8 +294,21 @@ fun PlaybackControls(
                     scale = scale,
                     isHandyEnabled = isHandyEnabled,
                     showHandyIcon = showHandyIcon,
+                    handyDelayMs = handyDelayMs,
                     isLooping = isLooping,
                     buttonSize = buttonSize,
+                    onShowCaptions = {
+                        onControllerInteractionForDialog()
+                        showCaptionDialog = true
+                    },
+                    onShowSettings = {
+                        onControllerInteractionForDialog()
+                        showOptionsDialog = true
+                    },
+                    onShowDelayDialog = {
+                        onControllerInteractionForDialog()
+                        showDelayDialog = true
+                    },
                 )
             } else {
                 // Placeholder to keep SpaceBetween alignment balanced
@@ -281,15 +318,15 @@ fun PlaybackControls(
     }
 
 
-    // Logic for dialogs (moved from RightPlaybackButtons to be accessible by both)
+    // Logic for dialogs
     if (showCaptionDialog) {
         val context = LocalContext.current
         val options = captions.map { it.displayString(context) }
+        Log.v(TAG, "subtitleIndex=$subtitleIndex, options=$options")
         BottomDialog(
             choices = options,
             currentChoice = subtitleIndex,
             onDismissRequest = {
-                onControllerInteraction.invoke()
                 showCaptionDialog = false
             },
             onSelectChoice = { index, _ ->
@@ -299,19 +336,26 @@ fun PlaybackControls(
         )
     }
     if (showOptionsDialog) {
-        val options = listOf("Audio Track", "Playback Speed", "Video Scale")
+        val options = buildList {
+            add("Audio Track")
+            add("Playback Speed")
+            add("Video Scale")
+            if (showHandyIcon) {
+                add(stringResource(R.string.handy_delay_compensation_title))
+            }
+        }
         BottomDialog(
             choices = options,
             currentChoice = null,
             onDismissRequest = {
-                onControllerInteraction.invoke()
                 showOptionsDialog = false
             },
-            onSelectChoice = { index, _ ->
-                when (index) {
-                    0 -> showAudioDialog = true
-                    1 -> showSpeedDialog = true
-                    2 -> showScaleDialog = true
+            onSelectChoice = { _, choice ->
+                when (choice) {
+                    "Audio Track" -> showAudioDialog = true
+                    "Playback Speed" -> showSpeedDialog = true
+                    "Video Scale" -> showScaleDialog = true
+                    else -> showDelayDialog = true
                 }
             },
             gravity = Gravity.END,
@@ -322,7 +366,6 @@ fun PlaybackControls(
             choices = audioOptions,
             currentChoice = audioIndex,
             onDismissRequest = {
-                onControllerInteraction.invoke()
                 showAudioDialog = false
             },
             onSelectChoice = { index, _ ->
@@ -336,7 +379,6 @@ fun PlaybackControls(
             choices = speedOptions,
             currentChoice = speedOptions.indexOf(playbackSpeed.toString()),
             onDismissRequest = {
-                onControllerInteraction.invoke()
                 showSpeedDialog = false
             },
             onSelectChoice = { _, value ->
@@ -350,11 +392,22 @@ fun PlaybackControls(
             choices = playbackScaleOptions.values.toList(),
             currentChoice = playbackScaleOptions.keys.toList().indexOf(scale),
             onDismissRequest = {
-                onControllerInteraction.invoke()
                 showScaleDialog = false
             },
             onSelectChoice = { index, _ ->
                 onPlaybackActionClick.invoke(PlaybackAction.Scale(playbackScaleOptions.keys.toList()[index]))
+            },
+            gravity = Gravity.END,
+        )
+    }
+    if (showDelayDialog) {
+        FunscriptDelayDialog(
+            currentDelayMs = handyDelayMs,
+            onDismissRequest = {
+                showDelayDialog = false
+            },
+            onDelayChange = { newDelay ->
+                onPlaybackActionClick.invoke(PlaybackAction.SetHandyDelay(newDelay))
             },
             gravity = Gravity.END,
         )
@@ -464,11 +517,16 @@ fun LeftPlaybackButtons(
     showHandyIcon: Boolean = false,
     isLooping: Boolean = false,
     modifier: Modifier = Modifier,
+    onControllerInteractionForDialog: (() -> Unit)? = null,
+    onDialogStateChange: ((Boolean) -> Unit)? = null,
     // Add parameters to trigger dialogs on mobile
     onShowCaptions: (() -> Unit)? = null,
     onShowSettings: (() -> Unit)? = null,
 ) {
     var showMoreOptions by remember { mutableStateOf(false) }
+    LaunchedEffect(showMoreOptions) {
+        onDialogStateChange?.invoke(showMoreOptions)
+    }
     Row(
         modifier = modifier.focusGroup(),
         horizontalArrangement = Arrangement.spacedBy(buttonSpacing),
@@ -477,7 +535,7 @@ fun LeftPlaybackButtons(
         PlaybackButton(
             iconRes = R.drawable.baseline_more_vert_96,
             onClick = {
-                onControllerInteraction.invoke()
+                onControllerInteractionForDialog?.invoke() ?: onControllerInteraction.invoke()
                 showMoreOptions = true
             },
             enabled = true,
@@ -562,14 +620,13 @@ fun RightPlaybackButtons(
     isLooping: Boolean = false,
     isHandyEnabled: Boolean = false,
     showHandyIcon: Boolean = false,
+    handyDelayMs: Long = 0L,
     buttonSize: androidx.compose.ui.unit.Dp = 56.dp,
+    onShowCaptions: () -> Unit = {},
+    onShowSettings: () -> Unit = {},
+    onShowDelayDialog: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var showCaptionDialog by remember { mutableStateOf(false) }
-    var showOptionsDialog by remember { mutableStateOf(false) }
-    var showAudioDialog by remember { mutableStateOf(false) }
-    var showSpeedDialog by remember { mutableStateOf(false) }
-    var showScaleDialog by remember { mutableStateOf(false) }
     Row(
         modifier = modifier.focusGroup(),
         horizontalArrangement = Arrangement.spacedBy(buttonSpacing),
@@ -580,7 +637,7 @@ fun RightPlaybackButtons(
             iconRes = R.drawable.captions_svgrepo_com,
             onClick = {
                 onControllerInteractionForDialog.invoke()
-                showCaptionDialog = true
+                onShowCaptions()
             },
             buttonSize = buttonSize,
             onControllerInteraction = onControllerInteraction,
@@ -592,6 +649,10 @@ fun RightPlaybackButtons(
                 onClick = {
                     onControllerInteraction.invoke()
                     onPlaybackActionClick.invoke(PlaybackAction.ToggleHandy)
+                },
+                onLongClick = {
+                    onControllerInteractionForDialog.invoke()
+                    onShowDelayDialog()
                 },
                 enabled = true,
                 onControllerInteraction = onControllerInteraction,
@@ -616,89 +677,11 @@ fun RightPlaybackButtons(
             iconRes = R.drawable.vector_settings,
             onClick = {
                 onControllerInteractionForDialog.invoke()
-                showOptionsDialog = true
+                onShowSettings()
             },
             enabled = true,
             buttonSize = buttonSize,
             onControllerInteraction = onControllerInteraction,
-        )
-    }
-    if (showCaptionDialog) {
-        val context = LocalContext.current
-        val options = captions.map { it.displayString(context) }
-        Log.v(TAG, "subtitleIndex=$subtitleIndex, options=$options")
-        BottomDialog(
-            choices = options,
-            currentChoice = subtitleIndex,
-            onDismissRequest = {
-                onControllerInteraction.invoke()
-                showCaptionDialog = false
-            },
-            onSelectChoice = { index, _ ->
-                onPlaybackActionClick.invoke(PlaybackAction.ToggleCaptions(index))
-            },
-            gravity = Gravity.END,
-        )
-    }
-    if (showOptionsDialog) {
-        val options = listOf("Audio Track", "Playback Speed", "Video Scale")
-        BottomDialog(
-            choices = options,
-            currentChoice = null,
-            onDismissRequest = {
-                onControllerInteraction.invoke()
-                showOptionsDialog = false
-            },
-            onSelectChoice = { index, _ ->
-                when (index) {
-                    0 -> showAudioDialog = true
-                    1 -> showSpeedDialog = true
-                    2 -> showScaleDialog = true
-                }
-            },
-            gravity = Gravity.END,
-        )
-    }
-    if (showAudioDialog) {
-        BottomDialog(
-            choices = audioOptions,
-            currentChoice = audioIndex,
-            onDismissRequest = {
-                onControllerInteraction.invoke()
-                showAudioDialog = false
-            },
-            onSelectChoice = { index, _ ->
-                onPlaybackActionClick.invoke(PlaybackAction.ToggleAudio(index))
-            },
-            gravity = Gravity.END,
-        )
-    }
-    if (showSpeedDialog) {
-        BottomDialog(
-            choices = speedOptions,
-            currentChoice = speedOptions.indexOf(playbackSpeed.toString()),
-            onDismissRequest = {
-                onControllerInteraction.invoke()
-                showSpeedDialog = false
-            },
-            onSelectChoice = { _, value ->
-                onPlaybackActionClick.invoke(PlaybackAction.PlaybackSpeed(value.toFloat()))
-            },
-            gravity = Gravity.END,
-        )
-    }
-    if (showScaleDialog) {
-        BottomDialog(
-            choices = playbackScaleOptions.values.toList(),
-            currentChoice = playbackScaleOptions.keys.toList().indexOf(scale),
-            onDismissRequest = {
-                onControllerInteraction.invoke()
-                showScaleDialog = false
-            },
-            onSelectChoice = { index, _ ->
-                onPlaybackActionClick.invoke(PlaybackAction.Scale(playbackScaleOptions.keys.toList()[index]))
-            },
-            gravity = Gravity.END,
         )
     }
 }
@@ -785,6 +768,7 @@ fun PlaybackButton(
     onClick: () -> Unit,
     onControllerInteraction: () -> Unit,
     modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
     buttonSize: androidx.compose.ui.unit.Dp = 56.dp,
     enabled: Boolean = true,
 ) {
@@ -792,6 +776,7 @@ fun PlaybackButton(
     Button(
         enabled = enabled,
         onClick = onClick,
+        onLongClick = onLongClick,
         shape = ButtonDefaults.shape(CircleShape),
         colors =
             ButtonDefaults.colors(
@@ -855,6 +840,111 @@ fun PlaybackFaButton(
 }
 
 @Composable
+fun FunscriptDelayDialog(
+    currentDelayMs: Long,
+    onDismissRequest: () -> Unit,
+    onDelayChange: (Long) -> Unit,
+    gravity: Int = Gravity.END,
+) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
+        dialogWindowProvider?.window?.let { window ->
+            window.setGravity(Gravity.BOTTOM or gravity)
+            window.setDimAmount(0f)
+        }
+
+        var delay by remember(currentDelayMs) { mutableLongStateOf(currentDelayMs) }
+        val focusRequester = remember { FocusRequester() }
+        LaunchedEffect(Unit) {
+            focusRequester.tryRequestFocus()
+        }
+
+        androidx.compose.material3.Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = Color.DarkGray,
+            modifier =
+                Modifier
+                    .wrapContentSize()
+                    .padding(16.dp),
+        ) {
+            Column(
+                modifier =
+                    Modifier
+                        .padding(16.dp)
+                        .width(340.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = stringResource(R.string.handy_delay_compensation_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = "${if (delay > 0) "+" else ""}$delay ms",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+
+                SliderBar(
+                    value = delay.toInt(),
+                    min = -2000,
+                    max = 2000,
+                    interval = 50,
+                    onChange = {
+                        delay = it.toLong()
+                        onDelayChange(delay)
+                    },
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                )
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    val stepButtons = listOf(-100L, -25L, 0L, 25L, 100L)
+                    stepButtons.forEach { step ->
+                        val text = when {
+                            step == 0L -> "0ms"
+                            step > 0 -> "+$step"
+                            else -> "$step"
+                        }
+                        val isZero = step == 0L
+                        androidx.tv.material3.Button(
+                            onClick = {
+                                delay = if (isZero) 0L else (delay + step).coerceIn(-5000L, 5000L)
+                                onDelayChange(delay)
+                            },
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 4.dp),
+                            modifier = if (isZero) Modifier.focusRequester(focusRequester) else Modifier,
+                        ) {
+                            Text(text, fontSize = 12.sp)
+                        }
+                    }
+                }
+
+                androidx.tv.material3.Button(
+                    onClick = onDismissRequest,
+                    modifier = Modifier.fillMaxWidth(0.6f),
+                ) {
+                    Text(
+                        text = "OK",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun BottomDialog(
     choices: List<String>,
     onDismissRequest: () -> Unit,
@@ -873,6 +963,12 @@ private fun BottomDialog(
             window.setDimAmount(0f) // Remove dimmed background of ongoing playback
         }
 
+        val initialFocusRequester = remember { FocusRequester() }
+        val targetFocusIndex = currentChoice ?: 0
+        LaunchedEffect(Unit) {
+            initialFocusRequester.tryRequestFocus()
+        }
+
         Box(
             modifier =
                 Modifier
@@ -884,7 +980,6 @@ private fun BottomDialog(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-//                        .widthIn(max = 240.dp)
                         .wrapContentWidth(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -924,6 +1019,7 @@ private fun BottomDialog(
                             )
                         },
                         interactionSource = interactionSource,
+                        modifier = if (index == targetFocusIndex) Modifier.focusRequester(initialFocusRequester) else Modifier,
                     )
                 }
             }
