@@ -131,11 +131,12 @@ fun StashGridControls(
     var showTopRowRaw by rememberSaveable { mutableStateOf(true) }
     val showTopRow by remember { derivedStateOf { showTopRowRaw } }
     var checked by rememberSaveable(filterArgs) { mutableStateOf(subToggleChecked) }
-    var searchQuery by rememberSaveable(filterArgs) {
+    var searchQuery by rememberSaveable(dataType) {
         mutableStateOf(
             filterArgs.findFilter?.q ?: "",
         )
     }
+    var searchJob by remember { mutableStateOf<Job?>(null) }
     var shouldRequestFocus by remember { mutableStateOf(requestFocus) }
     val gridFocusRequester = remember { FocusRequester() }
 //    LaunchedEffect(Unit) {
@@ -260,7 +261,6 @@ fun StashGridControls(
                         }
                     }
 
-                    var job: Job? = null
                     val searchDelay = uiConfig.preferences.searchPreferences.searchDelayMs
                     item {
                         SearchEditTextBox(
@@ -270,8 +270,8 @@ fun StashGridControls(
                             onValueChange = { newQuery ->
                                 shouldRequestFocus = false
                                 searchQuery = newQuery
-                                job?.cancel()
-                                job =
+                                searchJob?.cancel()
+                                searchJob =
                                     scope.launch {
                                         delay(searchDelay)
                                         if ((filterArgs.findFilter?.q ?: "") != searchQuery) {
@@ -281,7 +281,7 @@ fun StashGridControls(
                             },
                             onSearchClick = {
                                 shouldRequestFocus = true
-                                job?.cancel()
+                                searchJob?.cancel()
                                 if ((filterArgs.findFilter?.q ?: "") != searchQuery) {
                                     updateFilter(filterArgs.withQuery(searchQuery))
                                 }

@@ -199,14 +199,19 @@ fun SearchForPage(
             }
         }
 
-    var job: Job? = null
+    var searchJob by remember { mutableStateOf<Job?>(null) }
 
-    fun search(query: String) {
-        job?.cancel()
+    fun search(
+        query: String,
+        immediate: Boolean = false,
+    ) {
+        searchJob?.cancel()
         if (query.isNotNullOrBlank()) {
-            job =
+            searchJob =
                 scope.launch(LoggingCoroutineExceptionHandler(server, scope)) {
-                    delay(searchDelay)
+                    if (!immediate) {
+                        delay(searchDelay)
+                    }
                     results = SearchState.Pending
                     Log.v(TAG, "Starting search")
                     val items =
@@ -327,7 +332,7 @@ fun SearchForPage(
     }
 
     LaunchedEffect(startingSearchQuery) {
-        search(startingSearchQuery)
+        search(startingSearchQuery, immediate = true)
     }
 
     LazyColumn(
@@ -350,7 +355,7 @@ fun SearchForPage(
                     searchQuery = newQuery
                     search(newQuery)
                 },
-                onSearchClick = { search(searchQuery) },
+                onSearchClick = { search(searchQuery, immediate = true) },
             )
         }
 

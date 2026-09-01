@@ -40,7 +40,6 @@ class FilterViewModel : ViewModel() {
     ) {
         if (pager.value?.filter != filterArgs || server != this.server) {
             job?.cancel()
-            this.pager.value = null
             Log.d("FilterPageViewModel", "filterArgs=$filterArgs, columns=$columns")
             this.server = server
             val dataSupplierFactory = DataSupplierFactory(server.version)

@@ -62,6 +62,7 @@ import kotlinx.coroutines.launch
 class SearchViewModel : ViewModel() {
     private lateinit var server: StashServer
     private var currentQuery = ""
+    private var searchJob: Job? = null
 
     val scenes = MutableLiveData<List<Any>>(listOf())
     val groups = MutableLiveData<List<Any>>(listOf())
@@ -90,53 +91,73 @@ class SearchViewModel : ViewModel() {
         perPage: Int,
     ) {
         this.server = server
-        search(initialQuery, perPage)
+        if (initialQuery.isNotBlank()) {
+            search(initialQuery, perPage)
+        }
+    }
+
+    fun clear() {
+        searchJob?.cancel()
+        searchJob = null
+        currentQuery = ""
+        mapping.values.forEach { it.value = listOf() }
     }
 
     fun search(
         query: String,
         perPage: Int,
     ) {
-        if (query.isNotBlank() && query != this.currentQuery) {
-            this.currentQuery = query
-            val queryEngine = QueryEngine(server)
-            DataType.entries.forEach {
-                val data = mapping[it]!!
-                data.value = listOf()
+        val trimmedQuery = query.trim()
+        if (trimmedQuery.isBlank()) {
+            clear()
+            return
+        }
+        if (trimmedQuery == this.currentQuery && searchJob?.isActive == true) {
+            return
+        }
+        this.currentQuery = trimmedQuery
+        searchJob?.cancel()
+        searchJob =
+            viewModelScope.launch(
+                LoggingCoroutineExceptionHandler(
+                    server,
+                    viewModelScope,
+                    toastMessage = "Search failed",
+                ),
+            ) {
+                val queryEngine = QueryEngine(server)
+                DataType.entries.forEach { dataType ->
+                    val data = mapping[dataType] ?: return@forEach
 
-                val stashFindFilter =
-                    StashFindFilter(
-                        q = query,
-                        sortAndDirection =
-                            SortAndDirection(
-                                SortOption.sortByName(it),
-                                SortDirectionEnum.ASC,
-                            ),
-                    )
-                val findFilter =
-                    stashFindFilter.toFindFilterType(
-                        perPage = perPage,
-                        page = 1,
-                    )
+                    val stashFindFilter =
+                        StashFindFilter(
+                            q = trimmedQuery,
+                            sortAndDirection =
+                                SortAndDirection(
+                                    SortOption.sortByName(dataType),
+                                    SortDirectionEnum.ASC,
+                                ),
+                        )
+                    val findFilter =
+                        stashFindFilter.toFindFilterType(
+                            perPage = perPage,
+                            page = 1,
+                        )
 
-                viewModelScope.launch(
-                    LoggingCoroutineExceptionHandler(
-                        server,
-                        viewModelScope,
-                        toastMessage = "Search for ${
-                            StashApplication.getApplication().getString(it.pluralStringId)
-                        } failed",
-                    ),
-                ) {
-                    val results = queryEngine.find(it, findFilter)
-                    if (results.isNotEmpty()) {
+                    launch(
+                        LoggingCoroutineExceptionHandler(
+                            server,
+                            viewModelScope,
+                            toastMessage = "Search for ${
+                                StashApplication.getApplication().getString(dataType.pluralStringId)
+                            } failed",
+                        ),
+                    ) {
+                        val results = queryEngine.find(dataType, findFilter)
                         data.value = results
                     }
                 }
             }
-        } else if (query != this.currentQuery) {
-            mapping.values.forEach { it.value = listOf() }
-        }
     }
 }
 
@@ -154,9 +175,12 @@ fun SearchPage(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
+    val searchFocusRequester = remember { FocusRequester() }
 
     var searchQuery by rememberSaveable { mutableStateOf(initialQuery) }
+    var searchJob by remember { mutableStateOf<Job?>(null) }
     val perPage = uiConfig.preferences.searchPreferences.maxResults
+    val searchDelay = uiConfig.preferences.searchPreferences.searchDelayMs
 
     val scenes by viewModel.scenes.observeAsState(listOf())
     val groups by viewModel.groups.observeAsState(listOf())
@@ -181,11 +205,10 @@ fun SearchPage(
 
     OneTimeLaunchedEffect {
         viewModel.init(server, initialQuery, perPage)
-//        focusRequester.tryRequestFocus()
     }
 
     LaunchedEffect(Unit) {
-        focusRequester.tryRequestFocus()
+        searchFocusRequester.tryRequestFocus()
     }
 
     val listState = rememberLazyListState()
@@ -201,22 +224,24 @@ fun SearchPage(
         contentPadding = PaddingValues(16.dp),
     ) {
         stickyHeader {
-            var job: Job? = null
-            val searchDelay = uiConfig.preferences.searchPreferences.searchDelayMs
             SearchEditTextBox(
-                modifier = Modifier.ifElse(focusedRow < 0, Modifier.focusRequester(focusRequester)),
+                modifier = Modifier.focusRequester(searchFocusRequester),
                 value = searchQuery,
                 onValueChange = { newQuery ->
                     searchQuery = newQuery
-                    job?.cancel()
-                    job =
-                        scope.launch(StashCoroutineExceptionHandler()) {
-                            delay(searchDelay)
-                            viewModel.search(searchQuery, perPage)
-                        }
+                    searchJob?.cancel()
+                    if (newQuery.isBlank()) {
+                        viewModel.clear()
+                    } else {
+                        searchJob =
+                            scope.launch(StashCoroutineExceptionHandler()) {
+                                delay(searchDelay)
+                                viewModel.search(newQuery, perPage)
+                            }
+                    }
                 },
                 onSearchClick = {
-                    job?.cancel()
+                    searchJob?.cancel()
                     viewModel.search(searchQuery, perPage)
                 },
             )
